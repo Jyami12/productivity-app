@@ -1,180 +1,140 @@
 # DinoFocus
 
-> Turn focused work into fossil discoveries.
+M1 — Proposal and Requirements | CSE 416 | Fall 2026
 
-DinoFocus is a free, web-based focus tracker that combines countdown and stopwatch sessions with collectible dinosaur fossils and personal time analytics. Users organize work with custom tags, complete sessions to uncover fossils, and review where their focused time went. Invite-only groups add shared accountability while keeping personal session history private.
+# **1\. Problem and users**
 
-> **Project status:** Planning and requirements (M1). Application features described below are planned deliverables for the Fall 2026 semester.
+DinoFocus is a free web application that combines focus sessions, collectible dinosaur fossils, and personal time analysis. Users complete tagged work sessions to uncover fossils and build a useful record of where their time went.
 
-## Why DinoFocus?
+Primary users are individuals managing focused work across projects or activities, including students, professionals, freelancers, developers, and creators. They need help starting and finishing work, visible progress that encourages repeat use, and a breakdown of time by activity. Small groups of friends, classmates, teachers and their students, or coworkers also need shared accountability without exposing private session history.
 
-People working across classes, projects, and creative pursuits often need help starting, staying consistent, and understanding how they spend their time. DinoFocus connects three useful feedback loops:
+These needs and the motivational value of fossil collecting are product hypotheses informed by team experience. However, interviews have not yet validated them.
 
-- **Focus:** Start a tagged countdown or stopwatch session.
-- **Progress:** Complete valid sessions to reveal collectible fossils.
-- **Insight:** Review totals, trends, streaks, and time by tag.
+## **User → need → requirement**
 
-## Planned features
+| User | Need | Demonstrable behavior |
+| :---- | :---- | :---- |
+| Individual working across projects | Start work and understand time use | Start a tagged timer or stopwatch; recover it after a reload; review saved time by tag and date. |
+| User motivated by collecting | See progress from completed work | Complete a valid session to reveal part of a fossil and update the museum. |
+| Invited accountability-group member | Work toward a shared goal privately | Contribute completed minutes to a weekly group goal; show aggregate contributions only. |
 
-### Focus sessions
+# **2\. Why this needs a semester**
 
-- Account creation and sign-in
-- Countdown and stopwatch modes
-- Custom tags for projects and activities
-- Active-session recovery after a page reload
-- Completed, cancelled, and failed session states
-- Authoritative saved session history
+The semester is needed to integrate several workflows over shared, persistent data. Accounts own sessions, tags, fossil progress, and group memberships. The session engine must handle countdown and stopwatch modes, cancellation, reloads, and repeated completion requests. Each valid completion must consistently update rewards, personal analytics, and eligible group totals. Groups add invitations, membership permissions, and privacy checks. Frontend, backend, database, testing, and deployment must work together as one usable application.
 
-### Fossil collection
+# **3\. Scope and core workflows**
 
-- Fossil progress earned from valid completed minutes
-- Partial and completed fossil displays
-- A museum for collected fossils
-- Configurable reward pacing
-- Exactly-once backend reward updates to prevent duplicate progress
+## **v1: completed semester release**
 
-### Personal analytics
+Web accounts; countdown and stopwatch sessions; custom tags; recoverable active sessions; saved session history; configurable fossil rewards; a museum of partial and completed fossils; date-range totals, trends, streaks, and tag breakdowns; simple invite-only groups with weekly goals; and a deployed application.
 
-- Date-range totals
-- Daily and weekly trends
-- Focus streaks
-- Time breakdowns by tag
+## **Delivery schedule**
 
-### Private groups
+M3 MVP: sign in → start a tagged session → complete it → save the result → reveal a fossil → update a simple dashboard.
 
-- Invite-only membership
-- Owner-managed invitations and members
-- Weekly group goals
-- Contributions derived from valid completed sessions
-- Aggregate progress without exposing private notes or unrelated history
+M4 adds multiple fossils, the museum, editable tags, weekly/monthly analytics, and basic group goals. 
 
-## Core workflows
+M5 completes invitations, privacy controls, accessibility, integration tests, and the deployed demo. 
 
-### Personal focus
+M6 focuses on responsive polish, validated analytics, and the final demo.
 
-1. Sign in.
-2. Select countdown or stopwatch mode.
-3. Choose a tag and fossil.
-4. Start working.
-5. Complete or cancel the session.
-6. On valid completion, save the session and update fossil progress, the museum, and analytics.
+## **Explicitly not included in v1**
 
-If the page reloads during an active session, DinoFocus restores its saved state.
+Native mobile apps; phone/OS-level or browser-extension blocking; public feeds, direct messages, or comments; AI coaching; payments or a marketplace; instructor/gradebook monitoring; advanced anti-cheat; copyrighted franchise assets; and custom animation for every dinosaur. Fossil artwork uses a reusable reveal component and project-appropriate assets.
 
-### Group accountability
+## **Personal workflow**
 
-1. A group owner creates a private group and sets a weekly goal.
-2. The owner invites other users.
-3. Invited, authenticated users join the group.
-4. Members' valid completed sessions contribute to the shared goal.
-5. Members see aggregate progress and contributions while personal data remains private.
+Sign in; choose countdown or stopwatch, a tag, and a fossil; start working; complete or cancel. A valid completion saves the session and updates fossil progress, museum state, and analytics. Reloading restores the active session.
 
-## Architecture
+## **Group workflow**
 
-```mermaid
-flowchart LR
-    U[User] --> F[React / Next.js frontend]
-    F -->|Authenticated requests| B[Backend API]
-    B --> A[Authentication and authorization]
-    B --> S[Session validation]
-    B --> R[Rewards]
-    B --> N[Analytics]
-    B --> G[Group goals]
-    A --> D[(Persistent database)]
-    S --> D
-    R --> D
-    N --> D
-    G --> D
-```
+An owner creates a group, sets a weekly goal, and invites members. Invited authenticated users join; valid completed sessions contribute to the goal. Members see aggregate progress and contributions. Owners manage membership; private notes and unrelated history stay hidden by default.
 
-The backend validates identity, permissions, and state before reading or writing data. Saved session history is the source of truth for analytics, fossil rewards, and group contributions.
+# **4\. Functional requirements**
 
-Planned persistent entities include:
+| Area | Required behavior |
+| :---- | :---- |
+| Accounts and sessions | Create an account and sign in; start countdown or stopwatch sessions with a tag and fossil; preserve active/completed sessions; distinguish completed, cancelled, and failed states. |
+| Organization and history | Create/edit tags, categorize work, and review past sessions. Limit history edits to safe metadata; completed timing/state records remain authoritative. |
+| Fossil rewards | Award progress only for valid completed minutes. The backend calculates each reward exactly once; users cannot directly set progress. Show partial/completed fossils and repeated completions; keep pacing configurable. |
+| Personal analytics | Calculate date-range totals, daily/weekly trends, streaks, and time by tag from saved completed sessions. |
+| Private groups | Support owner-managed invitations/membership and weekly goals. Enforce membership on the server; derive contributions from valid member sessions. |
 
-- Users
-- Focus sessions
-- User-owned tags
-- Fossil definitions
-- Per-user fossil progress
-- Groups
-- Memberships
-- Invitations
+# **5\. User stories and acceptance criteria**
 
-The exact backend and database technologies will be selected during M2 design.
+## **US-1 — Start a tagged session**
 
-## Key product rules
+As a user, I want to start a tagged focus session, so that my work is organized by project or activity.
 
-- Only valid completed minutes award fossil progress.
-- The backend calculates and applies each reward exactly once.
-- Repeated completion requests cannot duplicate a reward.
-- Users cannot directly set fossil progress.
-- Completed timing and state records remain authoritative; history edits are limited to safe metadata.
-- Group membership and access are enforced on the server.
-- Private notes and unrelated personal history are hidden from group members by default.
+Accept when: sign-in plus duration/tag selection and Start creates an active session; the start time and tag are saved; refreshing restores its state.
 
-## Acceptance criteria
+## **US-2 — Reveal a fossil**
 
-The first complete release should demonstrate that:
+As a user, I want completed focus time to reveal a fossil, so that my work creates visible progress.
 
-- Starting a tagged session saves its start time and tag, and refreshing restores the active state.
-- Completing a valid session creates one permanent record, applies one reward, and updates the museum.
-- Dashboard totals and breakdowns match completed sessions within the selected date range.
-- Valid sessions from current group members update the group's weekly total.
-- Only invited, authenticated users can join a group, and removed users lose access.
-- Direct API requests from non-members are rejected.
+Accept when: a valid completion creates one permanent record; the configured reward is applied exactly once; the museum updates without manual database changes. Repeating the completion request does not double the reward.
 
-## Roadmap
+## **US-3 — Understand my week**
 
-| Milestone | Planned outcome |
-| --- | --- |
-| **M2** | Finalize design decisions, API contracts, backend, and database technology. |
-| **M3 — MVP** | Sign in, start a tagged session, complete and save it, reveal a fossil, and update a simple dashboard. |
-| **M4** | Add multiple fossils, the museum, editable tags, weekly/monthly analytics, and basic group goals. |
-| **M5** | Complete invitations, privacy controls, accessibility, integration tests, and the deployed demo. |
-| **M6** | Finish responsive polish, validate analytics, and prepare the final demo. |
+As a user, I want a weekly dashboard, so that I can understand where my focused time went.
 
-## Out of scope for v1
+Accept when: the selected range shows total time, a tag breakdown, and a trend or streak view; totals match completed-session records for that range.
 
-- Native mobile apps
-- Phone-, OS-, or browser-extension-level blocking
-- Public feeds, direct messages, or comments
-- AI coaching
-- Payments or a marketplace
-- Instructor or gradebook monitoring
-- Advanced anti-cheat systems
-- Copyrighted franchise assets
-- Custom animation for every dinosaur
+## **US-4 — Contribute to a shared goal**
 
-Fossil artwork will use a reusable reveal component and project-appropriate assets.
+As a group member, I want my completed minutes to count toward a shared goal, so that consistent work feels accountable and motivating.
 
-## Team
+Accept when: valid sessions from current members update group totals; private notes and unrelated personal history are hidden by default.
+
+## **US-5 — Keep groups private**
+
+As a group owner, I want invite-only membership, so that random users cannot view or contribute to our group.
+
+Accept when: only invited authenticated users can join; removed users lose access; direct API requests from non-members are rejected.
+
+# **6\. Rough architecture and shared data**
+
+![][image1]
+
+The browser sends authenticated requests to the backend; the backend validates permissions and state before reading or writing the database. A valid session completion records the result and applies the reward once. Analytics and group totals derive from the same saved session history.
+
+Frontend: React/Next timer, fossil reveal, museum, dashboard, and group pages. Backend: authentication, session-state validation, rewards, analytics, and group authorization. Persistent data: users, focus sessions, user-owned tags, fossil definitions, user fossil progress, groups, memberships, and invitations. Exact backend/database technology is selected during M2 design.
+
+Session records retain owner, mode, start/end time, duration, tag, and status. Fossil definitions remain separate from per-user progress. Membership records connect users to groups and roles. Stored session history is the source of truth for auditing analytics and rewards.
+
+# **7\. Named team ownership**
 
 | Team member | Primary ownership |
-| --- | --- |
-| [Calvin Chau](mailto:calvin.chau@stonybrook.edu) | Frontend product flows: timer, fossil reveal, dashboard, component consistency, frontend integration, and demo readiness. |
-| [Arshdeep Singh](mailto:arshdeep.singh.1@stonybrook.edu) | Frontend and deployment: group pages, responsive layout, accessibility, deployment pipeline, environment configuration, and release verification. |
-| [Saksham Sharma](mailto:saksham.sharma@stonybrook.edu) | Backend authentication and sessions: authentication, data models, focus-session API, timer validation, state tests, and reliability. |
-| [Jason Yamashita](mailto:jason.yamashita@stonybrook.edu) | Backend rewards and analytics: fossil progression, analytics queries, group-goal data, schema refinements, and integration tests. |
+| :---- | :---- |
+| [calvin.chau@stonybrook.edu](mailto:calvin.chau@stonybrook.edu) | Frontend product flows: React/Next timer, fossil reveal, dashboard, component consistency, frontend integration, and demo readiness. |
+| [arshdeep.singh.1@stonybrook.edu](mailto:arshdeep.singh.1@stonybrook.edu) | Frontend and deployment: group pages, responsive layout, accessibility, deployment pipeline, environment configuration, and release verification. |
+| [saksham.sharma@stonybrook.edu](mailto:saksham.sharma@stonybrook.edu) | Backend authentication and sessions: authentication, user/session models, focus-session API, timer validation, state tests, and reliability. |
+| [jason.yamashita@stonybrook.edu](mailto:jason.yamashita@stonybrook.edu) | Backend rewards and analytics: fossil progression, analytics queries, group-goal data, database schema refinements, and integration tests. |
 
-Frontend and backend owners will agree on API contracts before implementation. Data-shape changes should be documented, and each meaningful pull request should be reviewed by a teammate outside the author's primary workstream.
+Integration: frontend and backend owners agree on API contracts before implementation. Document data-shape changes and keep the specification current. Each meaningful pull request receives review from a teammate outside the author’s primary workstream.
 
-## Open design decisions
+## **Design decisions to close before implementation**
 
-Before implementation, the team will define:
+Specify timer completion/failure rules, safe editable session fields, streak/time-zone boundaries, invitation expiry, and how membership changes affect weekly totals. The initial reward example is 60 completed minutes \= 40% fossil reveal; validate and configure pacing before treating it as final.
 
-- Timer completion and failure rules
-- Safely editable session fields
-- Streak and time-zone boundaries
-- Invitation expiration behavior
-- How membership changes affect weekly totals
-- Final fossil reward pacing
+# **8\. What we completed for M1**
 
-The current reward example—60 completed minutes revealing 40% of a fossil—is a configurable starting point, not a final rule.
+We defined DinoFocus’s problem, target users, and core product: a web application where tagged focus sessions uncover dinosaur fossils and create useful time analysis. We established the personal MVP, the broader v1 scope, and explicit exclusions to keep the semester project manageable.
 
-## Contributing
+Our written M1 artifacts include functional and usability requirements, five user stories with acceptance criteria, a rough architecture sketch, shared-data responsibilities, and named ownership for all four team members. Together, these describe the proposed product and its implementation boundaries. The completed work presented here is proposal and requirements development; the application features are planned deliverables.
 
-Development and contribution instructions will be added after the M2 architecture and tooling decisions are finalized.
+# **9\. Design choices and why**
 
-## License
+We chose web-first delivery to reduce installation friction and keep one application to integrate, test, and deploy. Flexible tags support studying, professional work, and personal projects without making the product school-specific.
 
-No license has been selected yet. Add a `LICENSE` file before distributing or accepting outside contributions.
+We selected dinosaur-fossil excavation because percentage-based progress works with reusable static artwork. This gives users a visible reward while keeping collectible variety feasible without custom animation for every species.
+
+We designed saved focus sessions as the common source for rewards, analytics, and group contributions. Backend validation and exactly-once reward updates address duplicate requests and inconsistent totals. Invite-only groups with aggregate views provide accountability while protecting personal history. We prioritized the personal session-to-reward-to-analytics loop so group features build on a reliable foundation.
+
+# **10\. How the team worked, including AI**
+
+We organized the project into four named workstreams: frontend product flows; frontend group features and deployment; backend authentication and sessions; and backend rewards and analytics. The ownership table identifies each person’s responsibilities and the interfaces where frontend, backend, and shared data must connect.
+
+We used AI to help condense and organize the proposal, clarify its alignment with M1, and draft explanations of the design choices. We directed the revisions by identifying the required M1 content, removing repetition, and retaining the product scope, acceptance criteria, architecture, and team responsibilities.
+
+AI supported documentation and wording; the project concept, scope, and named responsibilities came from the supplied team proposal. The resulting document separates defined requirements from unvalidated user assumptions and unresolved design details. The team retains responsibility for product decisions and for verifying AI-assisted work.
