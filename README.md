@@ -94,7 +94,7 @@ Accept when: only invited authenticated users can join; removed users lose acces
 
 # **6\. Rough architecture and shared data**
 
-![][image1]
+![DinoFocus architecture diagram](images/architecture.png)
 
 The browser sends authenticated requests to the backend; the backend validates permissions and state before reading or writing the database. A valid session completion records the result and applies the reward once. Analytics and group totals derive from the same saved session history.
 
