@@ -1,5 +1,7 @@
 # DinoFocus
 
+> **M2 frontend prototype:** See [frontend setup and demo guide](frontend/README.md). Run with Node.js 22.18+ using `cd frontend`, `npm ci`, and `npm run dev`. Backend decisions remain open.
+
 M1 — Proposal and Requirements | CSE 416 | Fall 2026
 
 # **1\. Problem and users**
@@ -138,3 +140,4 @@ We organized the project into four named workstreams: frontend product flows; fr
 We used AI to help condense and organize the proposal, clarify its alignment with M1, and draft explanations of the design choices. We directed the revisions by identifying the required M1 content, removing repetition, and retaining the product scope, acceptance criteria, architecture, and team responsibilities.
 
 AI supported documentation and wording; the project concept, scope, and named responsibilities came from the supplied team proposal. The resulting document separates defined requirements from unvalidated user assumptions and unresolved design details. The team retains responsibility for product decisions and for verifying AI-assisted work.
+
