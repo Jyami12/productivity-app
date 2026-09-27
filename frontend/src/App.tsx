@@ -7,6 +7,7 @@ import {
   type Session,
   type ActiveSession,
 } from "./data/demoStore";
+import FossilMuseum from "./components/FossilMuseum";
 import "./App.css";
 const pages = ["Focus", "Dashboard", "Museum", "History", "Groups"] as const;
 const tags = ["Deep work", "Studying", "Reading", "Creative work"];
@@ -404,20 +405,15 @@ function App() {
             </>
           )}
           {page === "Museum" && (
-            <div className="museum-grid">
-              {specimen}
-              <section className="card empty">
-                <span>◇</span>
-                <h2>There’s more to discover.</h2>
-                <p>
-                  More fossil species and collectible artwork are planned for a
-                  future milestone.
-                </p>
-                <button className="primary" onClick={() => setPage("Focus")}>
-                  Continue your excavation →
-                </button>
-              </section>
-            </div>
+            <FossilMuseum
+              totalMinutes={total}
+              storageScope={
+                new URLSearchParams(window.location.search).get("demo") === "sample"
+                  ? "sample"
+                  : "default"
+              }
+              onFocus={() => setPage("Focus")}
+            />
           )}
           {page === "History" && (
             <section className="card">
