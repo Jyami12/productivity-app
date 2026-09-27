@@ -2,6 +2,22 @@
   display: flex;
   min-height: 100vh;
 }
+.sample-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  border: 1px solid #cdd7bd;
+  background: #f0f3e9;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #43583a;
+}
+.sample-banner p { margin: 0; line-height: 1.6; }
+.sample-banner strong { margin-right: 8px; }
 .sidebar {
   width: 230px;
   flex-shrink: 0;

@@ -1,3 +1,9 @@
+import { makeDemoSessions } from "./demoData.ts";
+
+export const isSampleWorkspace =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("demo") === "sample";
+
 export interface Session {
   id: string;
   tag: string;
@@ -11,8 +17,19 @@ export interface ActiveSession {
   duration: number;
   tag: string;
 }
-const sessionKey = "dinofocus.demo.sessions.v1",
-  activeKey = "dinofocus.demo.active.v1";
+const sessionKey = isSampleWorkspace
+    ? "dinofocus.m2.sample.sessions.v1"
+    : "dinofocus.demo.sessions.v1",
+  activeKey = isSampleWorkspace
+    ? "dinofocus.m2.sample.active.v1"
+    : "dinofocus.demo.active.v1";
+
+// Only the separate sample workspace is reset. Ordinary browser history is untouched.
+export function resetSampleWorkspace() {
+  if (!isSampleWorkspace) return;
+  localStorage.setItem(sessionKey, JSON.stringify(makeDemoSessions()));
+  localStorage.removeItem(activeKey);
+}
 function read(key: string): unknown {
   try {
     return JSON.parse(localStorage.getItem(key) ?? "null");
@@ -35,7 +52,11 @@ const validMode = (mode: unknown) =>
 // Replace this browser-only adapter with an API client once backend contracts are agreed.
 export const demoStore = {
   getSessions(): Session[] {
-    const data = read(sessionKey);
+    let data = read(sessionKey);
+    if (data === null && isSampleWorkspace) {
+      data = makeDemoSessions();
+      write(sessionKey, data);
+    }
     return Array.isArray(data)
       ? data.filter(
           (s): s is Session =>
