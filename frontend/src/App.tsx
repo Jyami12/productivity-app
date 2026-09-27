@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   demoStore,
   elapsedSeconds,
+  isSampleWorkspace,
+  resetSampleWorkspace,
   type Session,
   type ActiveSession,
 } from "./data/demoStore";
@@ -77,6 +79,7 @@ function App() {
             <span className="session-dot">✓</span>
             <div>
               <strong>{s.tag}</strong>
+              {s.id.startsWith("m2-sample-") && <small>Sample session</small>}
               <small>
                 {new Date(s.completedAt).toLocaleDateString(undefined, {
                   month: "short",
@@ -196,6 +199,25 @@ function App() {
           </span>
         </header>
         <div className="content">
+          {isSampleWorkspace && (
+            <section className="sample-banner" aria-label="Sample data workspace">
+              <p><strong>Sample data for M2</strong> Fictional history in a separate demo workspace.</p>
+              <button
+                className="text-button"
+                disabled={!!active}
+                onClick={() => {
+                  if (!window.confirm("Reset this sample workspace to 8 sessions and 149 minutes? This removes sessions added during this demo. Your ordinary workspace is unchanged.")) return;
+                  try {
+                    resetSampleWorkspace();
+                    setSessions(demoStore.getSessions());
+                    setNotice("Sample workspace reset to 8 sessions and 149 minutes.");
+                  } catch {
+                    setNotice("Unable to reset. Allow browser storage and try again.");
+                  }
+                }}
+              >Reset sample data</button>
+            </section>
+          )}
           <div className="page-heading">
             <div className="eyebrow">SLOW DOWN. DIG DEEP.</div>
             <h1>

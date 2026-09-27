@@ -1,6 +1,6 @@
 # DinoFocus frontend
 
-Frontend-only M2 prototype. Backend, authentication, database, and API choices remain open.
+Frontend-only M2 prototype. Backend, authentication, database, and API services remain planned. See [M2 design](../docs/M2-design.md) for the proposed architecture.
 
 ## Run locally
 
@@ -46,6 +46,10 @@ Google Fonts is optional; system fonts provide a fallback offline. All illustrat
 
 ## M2 status
 
-This covers the frontend prototype and frontend lint/test/build CI. The complete system architecture, backend stack, persistent data design, and team-approved design decisions remain open. The existing root README preserves the M1 proposal.
+This covers the frontend prototype and frontend lint/test/build CI. The proposed system architecture, backend stack, and persistent data design are documented in `docs/M2-design.md`; the team must confirm the proposal before implementation. The existing root README preserves the M1 proposal.
 
 AI assisted with frontend implementation, styling, and tests. The team should review and own the design and integration decisions before presenting.
+
+## M2 sample workspace
+
+Append `/?demo=sample` to the local URL. The labeled workspace starts with 8 fictional sessions and 149 minutes. Complete one real one-minute Deep work countdown to show 150 minutes, 9 sessions, and 100% fossil progress. The artwork is still a static preview. Use Reset sample data between rehearsals; it only resets the separate sample workspace. The ordinary URL preserves your normal history.
