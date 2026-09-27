@@ -8,7 +8,7 @@ DinoFocus helps anyone organize focused work, see progress, and review how they 
 ## Three core use cases
 
 | Requirement | User need | M2 interaction | Remaining work |
-
+| --- | --- | --- | --- |
 | 1: Start a tagged session | Start a manageable block of work and keep its context | Choose tag and duration, start, reload, finish or cancel | Accounts, authoritative server timing, custom tags |
 | 2: Reveal a fossil | See a visible reward for completed effort | Saved minutes update a percentage and remaining-minute count in Focus and Museum | Progressive artwork, multiple fossils, server-enforced rewards |
 | 3: Understand my week | Understand where focused time went | Dashboard shows all-time totals and tag breakdown; History lists sessions | Weekly/date filters, trends, streaks |
@@ -53,7 +53,7 @@ Database responsibilities (planned): persistent users, session state, tags, foss
 ## Stack and reasons
 
 | Technology | Status | Reason |
-
+| --- | --- | --- |
 | React + TypeScript | Implemented | Reusable views and typed session data keep the frontend consistent. |
 | Vite | Implemented | Runs and builds a standalone frontend without requiring backend services. |
 | Node + Express | Proposed in supplied deck | Uses TypeScript/JavaScript across the client and API. |
@@ -63,7 +63,7 @@ Database responsibilities (planned): persistent users, session state, tags, foss
 ## Shared records and proposed API contracts
 
 | Record | Important fields or constraints |
-
+| --- | --- | --- |
 | User | id, email (unique), passwordHash |
 | FocusSession | id, userId, tagId, fossilId, mode, startedAt, completedAt, creditedSeconds, status |
 | Tag | id, userId, name |
