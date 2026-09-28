@@ -1,6 +1,8 @@
 # DinoFocus
 
-> **M2 frontend prototype:** See [frontend setup and demo guide](frontend/README.md). Run with Node.js 22.18+ using `cd frontend`, `npm ci`, and `npm run dev`. Backend decisions remain open.
+> **M2 frontend prototype:** See [frontend setup and demo guide](frontend/README.md). Run with Node.js 22.18+ using `cd frontend`, `npm ci`, and `npm run dev`. Backend decisions remain open.  
+>
+> **M2 Google Slides Presentation:** [View the presentation](https://docs.google.com/presentation/d/17L2GNyLpSZcMxiYsAS0L3EEwgHxMsKHtzlHXeILIKUI/edit?usp=sharing)
 
 M1 — Proposal and Requirements | CSE 416 | Fall 2026
 
