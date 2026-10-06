@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   demoStore,
   elapsedSeconds,
+  toggleSessionPause,
   isSampleWorkspace,
   resetSampleWorkspace,
   type Session,
@@ -56,6 +57,20 @@ function App() {
     progress = Math.min(100, Math.floor((total / 150) * 100));
   const ready =
     !!active && (active.mode === "stopwatch" ? elapsed >= 60 : display === 0);
+  const paused = active?.pausedAt !== undefined;
+  function togglePause() {
+    if (!active) return;
+    const timestamp = Date.now();
+    const next = toggleSessionPause(active, timestamp);
+    demoStore.setActive(next);
+    setActive(next);
+    setNow(timestamp);
+    setNotice(
+      next.pausedAt !== undefined
+        ? "Session paused. Take your time."
+        : "Session resumed. Welcome back.",
+    );
+  }
   function start() {
     const next = { startedAt: Date.now(), mode, duration, tag };
     demoStore.setActive(next);
@@ -201,22 +216,39 @@ function App() {
         </header>
         <div className="content">
           {isSampleWorkspace && (
-            <section className="sample-banner" aria-label="Sample data workspace">
-              <p><strong>Sample data for M2</strong> Fictional history in a separate demo workspace.</p>
+            <section
+              className="sample-banner"
+              aria-label="Sample data workspace"
+            >
+              <p>
+                <strong>Sample data for M2</strong> Fictional history in a
+                separate demo workspace.
+              </p>
               <button
                 className="text-button"
                 disabled={!!active}
                 onClick={() => {
-                  if (!window.confirm("Reset this sample workspace to 8 sessions and 149 minutes? This removes sessions added during this demo. Your ordinary workspace is unchanged.")) return;
+                  if (
+                    !window.confirm(
+                      "Reset this sample workspace to 8 sessions and 149 minutes? This removes sessions added during this demo. Your ordinary workspace is unchanged.",
+                    )
+                  )
+                    return;
                   try {
                     resetSampleWorkspace();
                     setSessions(demoStore.getSessions());
-                    setNotice("Sample workspace reset to 8 sessions and 149 minutes.");
+                    setNotice(
+                      "Sample workspace reset to 8 sessions and 149 minutes.",
+                    );
                   } catch {
-                    setNotice("Unable to reset. Allow browser storage and try again.");
+                    setNotice(
+                      "Unable to reset. Allow browser storage and try again.",
+                    );
                   }
                 }}
-              >Reset sample data</button>
+              >
+                Reset sample data
+              </button>
             </section>
           )}
           <div className="page-heading">
@@ -260,11 +292,13 @@ function App() {
                   </div>
                   <div className="timer-face">
                     <span className="timer-caption">
-                      {active
-                        ? ready
-                          ? "NICELY DONE"
-                          : "STAY WITH IT"
-                        : "TIME TO FOCUS"}
+                      {paused
+                        ? "PAUSED"
+                        : active
+                          ? ready
+                            ? "NICELY DONE"
+                            : "STAY WITH IT"
+                          : "TIME TO FOCUS"}
                     </span>
                     <div className="timer-digits" role="timer">
                       {String(Math.floor(display / 60)).padStart(2, "0")}
@@ -272,11 +306,13 @@ function App() {
                       {String(display % 60).padStart(2, "0")}
                     </div>
                     <span className="timer-subtitle">
-                      {active
-                        ? ready
-                          ? "Save your session below"
-                          : "Your next discovery is getting closer"
-                        : "One session. One step forward."}
+                      {paused
+                        ? "Resume whenever you’re ready"
+                        : active
+                          ? ready
+                            ? "Save your session below"
+                            : "Your next discovery is getting closer"
+                          : "One session. One step forward."}
                     </span>
                   </div>
                   <div className="session-options">
@@ -316,11 +352,19 @@ function App() {
                     <div className="active-actions">
                       <button
                         className="primary"
-                        disabled={!ready}
-                        onClick={() => finish()}
+                        onClick={ready ? () => finish() : togglePause}
                       >
-                        Save completed session
+                        {ready
+                          ? "Save completed session"
+                          : paused
+                            ? "Resume timer"
+                            : "Pause timer"}
                       </button>
+                      {ready && active.mode === "stopwatch" && (
+                        <button className="text-button" onClick={togglePause}>
+                          {paused ? "Resume timer" : "Pause timer"}
+                        </button>
+                      )}
                       <button
                         className="text-button"
                         onClick={() => finish(true)}
@@ -408,7 +452,8 @@ function App() {
             <FossilMuseum
               totalMinutes={total}
               storageScope={
-                new URLSearchParams(window.location.search).get("demo") === "sample"
+                new URLSearchParams(window.location.search).get("demo") ===
+                "sample"
                   ? "sample"
                   : "default"
               }

@@ -16,6 +16,8 @@ export interface ActiveSession {
   mode: Session["mode"];
   duration: number;
   tag: string;
+  pausedAt?: number;
+  pausedMs?: number;
 }
 const sessionKey = isSampleWorkspace
     ? "dinofocus.m2.sample.sessions.v1"
@@ -45,7 +47,26 @@ function write(key: string, value: unknown) {
   }
 }
 export function elapsedSeconds(active: ActiveSession, now: number) {
-  return Math.max(0, Math.floor((now - active.startedAt) / 1000));
+  return Math.max(
+    0,
+    Math.floor(
+      ((active.pausedAt ?? now) - active.startedAt - (active.pausedMs ?? 0)) /
+        1000,
+    ),
+  );
+}
+export function toggleSessionPause(
+  active: ActiveSession,
+  now: number,
+): ActiveSession {
+  if (active.pausedAt !== undefined) {
+    const { pausedAt, ...running } = active;
+    return {
+      ...running,
+      pausedMs: (active.pausedMs ?? 0) + Math.max(0, now - pausedAt),
+    };
+  }
+  return { ...active, pausedAt: now };
 }
 const validMode = (mode: unknown) =>
   mode === "countdown" || mode === "stopwatch";
@@ -77,7 +98,11 @@ export const demoStore = {
       validMode(data.mode) &&
       Number.isFinite(data.duration) &&
       data.duration > 0 &&
-      typeof data.tag === "string"
+      typeof data.tag === "string" &&
+      (data.pausedAt === undefined ||
+        (Number.isFinite(data.pausedAt) && data.pausedAt >= data.startedAt)) &&
+      (data.pausedMs === undefined ||
+        (Number.isFinite(data.pausedMs) && data.pausedMs >= 0))
       ? data
       : null;
   },
