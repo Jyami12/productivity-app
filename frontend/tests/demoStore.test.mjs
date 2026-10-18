@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
-import { demoStore, elapsedSeconds } from "../src/data/demoStore.ts";
+import {
+  demoStore,
+  elapsedSeconds,
+  toggleSessionPause,
+} from "../src/data/demoStore.ts";
 const memory = new Map();
 globalThis.localStorage = {
   getItem: (k) => memory.get(k) ?? null,
@@ -39,4 +43,30 @@ test("corrupt storage falls back to an empty workspace", () => {
   memory.set("dinofocus.demo.active.v1", "{}");
   assert.deepEqual(demoStore.getSessions(), []);
   assert.equal(demoStore.getActive(), null);
+});
+
+test("pausing survives reload and does not count the break toward completion", () => {
+  const paused = toggleSessionPause(active, 31500);
+  demoStore.setActive(paused);
+  const restored = demoStore.getActive();
+  assert.equal(elapsedSeconds(restored, 500000), 30);
+  assert.equal(demoStore.complete(restored, 500000).length, 0);
+  const resumed = toggleSessionPause(restored, 131500);
+  assert.equal(resumed.startedAt, active.startedAt);
+  assert.equal(elapsedSeconds(resumed, 160999), 59);
+  assert.equal(demoStore.complete(resumed, 161000)[0].seconds, 60);
+  assert.equal(demoStore.complete(resumed, 200000).length, 1);
+});
+
+test("multiple pauses retain fractional seconds and exclude all breaks", () => {
+  let session = toggleSessionPause(active, 1500);
+  session = toggleSessionPause(session, 2500);
+  session = toggleSessionPause(session, 3000);
+  session = toggleSessionPause(session, 13000);
+  assert.equal(elapsedSeconds(session, 13000), 1);
+});
+
+test("a paused stopwatch saves only focused time", () => {
+  const session = toggleSessionPause({ ...active, mode: "stopwatch" }, 91500);
+  assert.equal(demoStore.complete(session, 900000)[0].seconds, 90);
 });
