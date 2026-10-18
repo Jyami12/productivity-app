@@ -17,6 +17,7 @@ import FocusWeek from "./components/FocusWeek";
 import { FOSSILS, type FossilDefinition } from "./data/fossils";
 import { dateKey, formatDuration } from "./data/timeAnalytics";
 import "./Refinements.css";
+import TimerAppearance from "./components/TimerAppearance";
 const pages = ["Focus", "Dashboard", "Museum", "History", "Groups"] as const;
 const tags = ["Deep work", "Studying", "Reading", "Creative work"];
 function App() {
@@ -396,7 +397,7 @@ function App() {
           {page === "Focus" && (
             <>
               <div className="focus-grid">
-                <section className="card timer-card">
+                <TimerAppearance>
                   <div className="card-label">
                     <span>YOUR SESSION</span>
                     {active && <span>{paused ? "PAUSED" : "IN PROGRESS"}</span>}
@@ -570,7 +571,7 @@ function App() {
                       Focus for at least one minute before saving.
                     </p>
                   )}
-                </section>
+                </TimerAppearance>
                 {specimen}
               </div>
               <dialog
