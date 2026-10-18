@@ -8,6 +8,7 @@ import {
   type ActiveSession,
 } from "./data/demoStore";
 import FossilMuseum from "./components/FossilMuseum";
+import TimeAnalytics from "./components/TimeAnalytics";
 import "./App.css";
 const pages = ["Focus", "Dashboard", "Museum", "History", "Groups"] as const;
 const tags = ["Deep work", "Studying", "Reading", "Creative work"];
@@ -364,45 +365,12 @@ function App() {
             </>
           )}
           {page === "Dashboard" && (
-            <>
-              <div className="stat-grid">
-                {[
-                  ["Total focus", `${Math.floor(total)} min`],
-                  ["Sessions completed", String(sessions.length)],
-                  ["Fossil revealed", `${progress}%`],
-                ].map(([label, value]) => (
-                  <section className="card stat" key={label}>
-                    <span>{label}</span>
-                    <strong>{value}</strong>
-                    <small>All time · this browser</small>
-                  </section>
-                ))}
-              </div>
-              <section className="card">
-                <h2>Time by activity</h2>
-                <p className="muted">
-                  Built from your completed demo sessions.
-                </p>
-                {tags.map((t) => {
-                  const mins = sessions
-                    .filter((s) => s.tag === t)
-                    .reduce((sum, s) => sum + s.seconds / 60, 0);
-                  return (
-                    <div className="activity" key={t}>
-                      <div>
-                        <span>{t}</span>
-                        <strong>{Math.floor(mins)} min</strong>
-                      </div>
-                      <progress
-                        max={Math.max(1, total)}
-                        value={mins}
-                        aria-label={`${t} focus time`}
-                      />
-                    </div>
-                  );
-                })}
-              </section>
-            </>
+            <TimeAnalytics
+              sessions={sessions}
+              now={now}
+              storageScope={isSampleWorkspace ? "sample" : "default"}
+              onStartFocus={() => setPage("Focus")}
+            />
           )}
           {page === "Museum" && (
             <FossilMuseum
