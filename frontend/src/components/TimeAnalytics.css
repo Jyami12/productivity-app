@@ -799,3 +799,43 @@
     font-size: 11px;
   }
 }
+
+/* Dashboard views share filters without stacking every report. */
+.ta [hidden] { display: none !important; }
+.ta-heading { margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+.ta-tabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 4px; background: #e9eee0; border-radius: 9px; }
+.ta-tabs button { border: 0; border-radius: 6px; padding: 10px 16px; color: #617055; background: transparent; }
+.ta-tabs button[aria-selected="true"] { background: #244735; color: #fff; font-weight: 600; }
+.ta-export { margin-left: auto; padding: 10px 14px; }
+.ta-toolbar { margin: 10px 0 12px; gap: 12px; }
+.ta-filter-row { margin-bottom: 14px; gap: 12px; }
+.ta-filter-row input, .ta-filter-row select { margin-top: 4px; padding: 8px 10px; min-height: 36px; }
+.ta-summary { padding: 16px 20px; gap: 20px; margin-bottom: 14px; }
+.ta-total > strong { font-size: 36px; margin: 5px 0; }
+.ta-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding-left: 20px; }
+.ta-metrics dd { font-size: 21px; margin: 5px 0; }
+.ta-chart-card, .ta-panel { padding: 18px 20px; margin-bottom: 14px; }
+.ta-week-chart { margin: 14px 0 10px; }
+.ta-bar-track, .ta-hour-track { height: clamp(65px, 14dvh, 130px); }
+.ta-hour-chart { margin: 14px 0 10px; }
+.ta-chart-insight { padding-top: 10px; }
+.ta-two-column { gap: 14px; }
+.ta-pattern-stat { margin: 16px 0; }
+.ta-activity { padding: 14px 0 10px; }
+.ta-habit-grid { margin-top: 16px; gap: 24px; }
+.ta-calendar-head { margin-top: 18px; }
+.ta-heat { padding: 7px 2px; }
+.ta-table td { padding: 10px 12px; }
+.ta-table-scroll { margin-top: 10px; }
+.ta-notice:empty { margin: 0; }
+.ta-report-notes { color: var(--ta-muted); font-size: 10px; margin-top: 8px; }
+.ta-report-notes summary { cursor: pointer; width: fit-content; }
+.ta-report-notes p { margin-top: 8px; }
+@media (max-width: 1100px) {
+  .ta-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 850px) {
+  .ta-metrics { padding: 14px 0 0; }
+  .ta-tabs button { padding: 9px 12px; }
+  .ta-summary { gap: 14px; }
+}

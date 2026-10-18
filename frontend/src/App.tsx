@@ -32,12 +32,19 @@ function App() {
     [tag, setTag] = useState(tags[0]),
     [now, setNow] = useState(() => Date.now()),
     [notice, setNotice] = useState("");
+  const [customDuration, setCustomDuration] = useState<string | null>(null);
+  const durationValid =
+    customDuration === null ||
+    (Number.isInteger(Number(customDuration)) &&
+      Number(customDuration) >= 1 &&
+      Number(customDuration) <= 1440);
   const [receipt, setReceipt] = useState<{
     seconds: number;
     tag: string;
     unlocked: FossilDefinition[];
   } | null>(null);
   const receiptDialog = useRef<HTMLDialogElement>(null);
+  const activityDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (receipt && receiptDialog.current && !receiptDialog.current.open)
       receiptDialog.current.showModal();
@@ -85,6 +92,7 @@ function App() {
     );
   }
   function start() {
+    if (mode === "countdown" && !durationValid) return;
     const next = { startedAt: Date.now(), mode, duration, tag };
     demoStore.setActive(next);
     setActive(next);
@@ -112,26 +120,29 @@ function App() {
     demoStore.setActive(null);
     setActive(null);
   }
-  const list = (
+  const sessionList = (limit?: number) => (
     <div className="session-list">
       {sessions.length ? (
-        sessions.map((s) => (
-          <div className="session-row" key={s.id}>
-            <span className="session-dot">✓</span>
-            <div>
-              <strong>{s.tag}</strong>
-              {s.id.startsWith("m2-sample-") && <small>Sample session</small>}
-              <small>
-                {new Date(s.completedAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                })}{" "}
-                · {s.mode === "countdown" ? "Focus timer" : "Stopwatch"}
-              </small>
+        [...sessions]
+          .sort((a, b) => b.completedAt - a.completedAt)
+          .slice(0, limit)
+          .map((s) => (
+            <div className="session-row" key={s.id}>
+              <span className="session-dot">✓</span>
+              <div>
+                <strong>{s.tag}</strong>
+                {s.id.startsWith("m2-sample-") && <small>Sample session</small>}
+                <small>
+                  {new Date(s.completedAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  · {s.mode === "countdown" ? "Focus timer" : "Stopwatch"}
+                </small>
+              </div>
+              <b>{Math.floor(s.seconds / 60)} min</b>
             </div>
-            <b>{Math.floor(s.seconds / 60)} min</b>
-          </div>
-        ))
+          ))
       ) : (
         <div className="empty">
           <span>↗</span>
@@ -144,6 +155,7 @@ function App() {
       )}
     </div>
   );
+  const list = sessionList();
   const specimen = (
     <section className="dig-card">
       <div className="card-label">
@@ -181,11 +193,6 @@ function App() {
           {nextFossil ? "YOUR NEXT FIND" : "IN YOUR MUSEUM"}
         </span>
         <h2>{featured.name}</h2>
-        <p>
-          {nextFossil
-            ? `Keep going. This one joins your collection at ${featured.target} total minutes.`
-            : "The whole collection is yours. Pick a favorite in the museum."}
-        </p>
         <div className="progress-label">
           <span>Excavation progress</span>
           <strong>{progress}%</strong>
@@ -215,8 +222,14 @@ function App() {
           onClick={() => setPage("Focus")}
           aria-label="DinoFocus home"
         >
-          <span className="brand-mark">✳</span>
-          <span className="brand-name">DinoFocus.</span>
+          <img
+            className="brand-mark brand-logo"
+            src={`${import.meta.env.BASE_URL}dinofocus-logo.png`}
+            alt=""
+            width="42"
+            height="42"
+          />
+          <span className="brand-name">DinoFocus</span>
         </a>
         <div className="workspace-label">YOUR FIELD STATION</div>
         <nav aria-label="Main navigation">
@@ -274,53 +287,55 @@ function App() {
               <span>{ready ? "Ready to save" : "Focusing"} ↗</span>
             </button>
           )}
-          <span className="demo-badge">
-            <i />
-            Frontend demo
-          </span>
-        </header>
-        <div className="content">
-          {!isSampleWorkspace && (
-            <p className="sample-entry">
-              <a href="?demo=sample">Explore the sample dashboard ↗</a>
-            </p>
-          )}
-          {isSampleWorkspace && (
-            <section
-              className="sample-banner"
-              aria-label="Sample data workspace"
-            >
-              <p>
-                <strong>Sample dashboard</strong> 120 fictional minutes. Reset
-                to refresh the dates.
-              </p>
-              <button
-                className="text-button"
-                disabled={!!active}
-                onClick={() => {
-                  if (
-                    !window.confirm(
-                      "Reset to 120 fictional minutes and five collected fossils? This removes sessions added during this demo. Your ordinary workspace is unchanged.",
-                    )
-                  )
-                    return;
-                  try {
-                    resetSampleWorkspace();
-                    setSessions(demoStore.getSessions());
-                    setNotice(
-                      "Sample history refreshed. Dashboard and museum now use the new sample sessions.",
-                    );
-                  } catch {
-                    setNotice(
-                      "Unable to reset. Allow browser storage and try again.",
-                    );
-                  }
-                }}
+          <div className="demo-controls">
+            {isSampleWorkspace && (
+              <section
+                className="sample-banner"
+                aria-label="Sample data workspace"
               >
-                Reset sample data
-              </button>
-            </section>
-          )}
+                <p>
+                  <strong>Sample dashboard</strong> 120 fictional minutes. Reset
+                  to refresh the dates.
+                </p>
+                <button
+                  className="text-button"
+                  disabled={!!active}
+                  onClick={() => {
+                    if (
+                      !window.confirm(
+                        "Reset to 120 fictional minutes and five collected fossils? This removes sessions added during this demo. Your ordinary workspace is unchanged.",
+                      )
+                    )
+                      return;
+                    try {
+                      resetSampleWorkspace();
+                      setSessions(demoStore.getSessions());
+                      setNotice(
+                        "Sample history refreshed. Dashboard and museum now use the new sample sessions.",
+                      );
+                    } catch {
+                      setNotice(
+                        "Unable to reset. Allow browser storage and try again.",
+                      );
+                    }
+                  }}
+                >
+                  Reset sample data
+                </button>
+              </section>
+            )}
+            <a
+              className="demo-badge"
+              href={isSampleWorkspace ? "?" : "?demo=sample"}
+            >
+              <i />
+              {isSampleWorkspace ? "Exit sample" : "Frontend demo ↗"}
+            </a>
+          </div>
+        </header>
+        <div
+          className={`content ${page === "Focus" ? "focus-content" : page === "Dashboard" ? "dashboard-content" : page === "Museum" ? "museum-content" : ""}`}
+        >
           <div className="page-heading">
             <div className="eyebrow">
               {new Date(now).toLocaleDateString(undefined, {
@@ -331,27 +346,16 @@ function App() {
             </div>
             <h1>
               {page === "Focus"
-                ? "Ready when you are."
+                ? "Focus"
                 : page === "Dashboard"
-                  ? "Your time, well spent."
+                  ? "Focus analytics"
                   : page === "Museum"
-                    ? "Look what you’ve uncovered."
+                    ? "Fossil collection"
                     : page === "History"
                       ? "Your session log."
                       : "Focus with your people."}
             </h1>
-            <p>
-              {page === "Focus"
-                ? "Choose one thing. Give it a little time."
-                : page === "Dashboard"
-                  ? "See what you worked on, and when it clicked."
-                  : page === "Museum"
-                    ? "A collection built one session at a time."
-                    : "Your work, saved here."}
-            </p>
-          </div>
-          {page === "Focus" && (
-            <>
+            {page === "Focus" && (
               <div className="today-strip" aria-label="Today's progress">
                 <span>
                   <strong>{formatDuration(todaySeconds)}</strong> focused today
@@ -364,12 +368,38 @@ function App() {
                   <strong>{collected}/12</strong> fossils{" "}
                   <span aria-hidden="true">↗</span>
                 </button>
+                <button
+                  className="activity-trigger"
+                  aria-label="Open activity side panel"
+                  title="Open activity side panel"
+                  aria-haspopup="dialog"
+                  aria-controls="activity-panel"
+                  onClick={() => activityDialog.current?.showModal()}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <path d="M15 4v16M18 8v8" />
+                  </svg>
+                  <span>Activity</span>
+                </button>
               </div>
+            )}
+          </div>
+          {page === "Focus" && (
+            <>
               <div className="focus-grid">
                 <section className="card timer-card">
                   <div className="card-label">
                     <span>YOUR SESSION</span>
-                    <span>{active ? "IN PROGRESS" : "MAKE SOME ROOM"}</span>
+                    {active && <span>{paused ? "PAUSED" : "IN PROGRESS"}</span>}
                   </div>
                   <div className="segmented" aria-label="Timer mode">
                     {(["countdown", "stopwatch"] as const).map((m) => (
@@ -427,7 +457,7 @@ function App() {
                             : active.mode === "countdown"
                               ? `${Math.floor(timerProgress)}% of your session`
                               : "Counting up. Take your time."
-                          : "A small start counts."}
+                          : ""}
                     </span>
                   </div>
                   {(active?.mode ?? mode) === "countdown" && (
@@ -441,7 +471,10 @@ function App() {
                           key={d}
                           disabled={!!active}
                           aria-pressed={(active?.duration ?? duration) === d}
-                          onClick={() => setDuration(d)}
+                          onClick={() => {
+                            setDuration(d);
+                            setCustomDuration(null);
+                          }}
                         >
                           {d}
                           <span> min</span>
@@ -464,23 +497,46 @@ function App() {
                       </select>
                     </label>
                     <label>
-                      Duration
-                      <select
-                        aria-label="Duration"
-                        value={active?.duration ?? duration}
+                      Duration (minutes)
+                      <input
+                        type="number"
+                        aria-label="Duration in minutes"
+                        min={1}
+                        max={1440}
+                        step={1}
+                        value={active?.duration ?? customDuration ?? duration}
                         disabled={!!active || mode === "stopwatch"}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                      >
-                        {[1, 15, 25, 45, 60].map((d) => (
-                          <option value={d} key={d}>
-                            {d} minutes{d === 1 ? " · demo" : ""}
-                          </option>
-                        ))}
-                      </select>
+                        aria-invalid={mode === "countdown" && !durationValid}
+                        aria-describedby={
+                          !durationValid && mode === "countdown"
+                            ? "duration-error"
+                            : undefined
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCustomDuration(value);
+                          const minutes = Number(value);
+                          if (
+                            Number.isInteger(minutes) &&
+                            minutes >= 1 &&
+                            minutes <= 1440
+                          )
+                            setDuration(minutes);
+                        }}
+                      />
+                      {!durationValid && mode === "countdown" && (
+                        <small id="duration-error">
+                          Enter 1–1440 whole minutes.
+                        </small>
+                      )}
                     </label>
                   </div>
                   {!active ? (
-                    <button className="primary start" onClick={start}>
+                    <button
+                      className="primary start"
+                      onClick={start}
+                      disabled={mode === "countdown" && !durationValid}
+                    >
                       ▶ <span>Start focusing</span>
                       <span>→</span>
                     </button>
@@ -509,33 +565,60 @@ function App() {
                       </button>
                     </div>
                   )}
-                  <p className="timer-footnote">
-                    {(active?.mode ?? mode) === "stopwatch"
-                      ? "Focus for at least one minute before saving."
-                      : "Finish your timer to uncover a little more."}
-                  </p>
+                  {(active?.mode ?? mode) === "stopwatch" && (
+                    <p className="timer-footnote">
+                      Focus for at least one minute before saving.
+                    </p>
+                  )}
                 </section>
                 {specimen}
               </div>
-              <div className="bottom-grid">
-                <section className="card recent">
-                  <div className="section-title">
-                    <h2>Recent sessions</h2>
-                    <button
-                      className="text-button"
-                      onClick={() => setPage("History")}
-                    >
-                      View all ↗
-                    </button>
-                  </div>
-                  {list}
-                </section>
-                <FocusWeek
-                  sessions={sessions}
-                  now={now}
-                  onOpen={() => setPage("Dashboard")}
-                />
-              </div>
+              <dialog
+                className="activity-drawer"
+                id="activity-panel"
+                ref={activityDialog}
+                aria-labelledby="activity-title"
+                onClick={(event) => {
+                  if (event.target === event.currentTarget)
+                    activityDialog.current?.close();
+                }}
+              >
+                <div className="activity-drawer-heading">
+                  <h2 id="activity-title">Activity</h2>
+                  <button
+                    className="text-button"
+                    onClick={() => activityDialog.current?.close()}
+                    autoFocus
+                  >
+                    Close ✕
+                  </button>
+                </div>
+                <div className="activity-panels">
+                  <section className="card recent">
+                    <div className="section-title">
+                      <h2>Recent sessions</h2>
+                      <button
+                        className="text-button"
+                        onClick={() => {
+                          activityDialog.current?.close();
+                          setPage("History");
+                        }}
+                      >
+                        View all ↗
+                      </button>
+                    </div>
+                    {sessionList(3)}
+                  </section>
+                  <FocusWeek
+                    sessions={sessions}
+                    now={now}
+                    onOpen={() => {
+                      activityDialog.current?.close();
+                      setPage("Dashboard");
+                    }}
+                  />
+                </div>
+              </dialog>
             </>
           )}
           {page === "Dashboard" && (
