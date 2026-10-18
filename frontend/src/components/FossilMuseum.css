@@ -438,3 +438,114 @@
     padding: 34px 20px 24px;
   }
 }
+
+/* Field notebook treatment: warm paper, fine line art, quiet sage accents. */
+.fm-art-stage {
+  height: 150px;
+  background: radial-gradient(
+    ellipse at center,
+    #f0ebdb 0%,
+    #faf8f0 65%,
+    transparent 70%
+  );
+}
+.fm-art {
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.fm-detail-art {
+  height: 245px;
+  background: #f4f0e5;
+  border-radius: 12px;
+  padding: 10px;
+}
+.fm-detail-art .fm-art {
+  max-width: 100%;
+}
+.fm-dialog {
+  width: min(610px, calc(100vw - 32px));
+}
+.fm-locked .fm-art {
+  opacity: 0.5;
+}
+.fm-archive-image {
+  filter: grayscale(1) sepia(0.55) saturate(0.65);
+  mix-blend-mode: multiply;
+}
+.fm-art-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 0 0 22px;
+}
+.fm-art-controls label {
+  display: grid;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--fm-muted);
+  flex-shrink: 0;
+}
+.fm-art-controls select {
+  padding: 10px 12px;
+  border: 1px solid #d9e0ce;
+  border-radius: 8px;
+  background: #fffdf7;
+  color: var(--fm-ink);
+  font: inherit;
+  font-size: 12px;
+}
+.fm-art-controls p {
+  color: var(--fm-muted);
+  font-size: 11px;
+  line-height: 1.6;
+  max-width: 410px;
+}
+.fm select:focus-visible,
+.fm a:focus-visible,
+.fm summary:focus-visible {
+  outline: 3px solid #b9873f;
+  outline-offset: 3px;
+}
+.fm-credits {
+  margin-top: 20px;
+  border-top: 1px solid #dce3d5;
+  padding-top: 15px;
+  color: var(--fm-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.fm-credits summary {
+  cursor: pointer;
+  color: var(--fm-ink);
+}
+.fm-credits li {
+  margin: 10px 0;
+}
+.fm-credits a,
+.sample-entry a {
+  color: #36563d;
+  text-underline-offset: 3px;
+}
+.sample-entry {
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 600px) {
+  .fm-art-stage {
+    height: 110px;
+  }
+  .fm-detail-art {
+    height: 195px;
+  }
+  .fm-art-controls {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .fm-art-controls label,
+  .fm-art-controls select {
+    width: 100%;
+  }
+}

@@ -8,33 +8,25 @@ import {
   type ActiveSession,
 } from "./data/demoStore";
 import FossilMuseum from "./components/FossilMuseum";
-import TimeAnalytics from "./components/TimeAnalytics";
+import FossilSketch from "./components/FossilSketch";
 import "./App.css";
+import TimeAnalytics from "./components/TimeAnalytics";
 const pages = ["Focus", "Dashboard", "Museum", "History", "Groups"] as const;
 const tags = ["Deep work", "Studying", "Reading", "Creative work"];
 function Fossil() {
   return (
-    <svg
-      className="fossil"
-      viewBox="0 0 460 260"
+    <div
       role="img"
-      aria-label="Illustrated dinosaur skeleton"
+      aria-label="Detailed decorative Tyrannosaurus skeleton sketch"
     >
-      <g
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="10"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M65 174 Q122 165 152 116 Q182 83 251 112 L303 91 L332 54 M324 48 L370 43 L392 62 L382 86 L346 83 Z M350 84 L378 96 L386 87 M158 113 Q155 152 184 160 M182 107 Q173 157 207 170 M206 109 Q200 154 230 163 M232 111 Q230 144 249 146 M178 151 L157 192 L181 227 L206 228 M237 149 L265 179 L249 216 L278 220 M287 100 L288 129 L309 139 M304 101 L317 124 L329 127" />
-      </g>
-      <circle cx="366" cy="62" r="6" fill="#254b39" />
-    </svg>
+      <FossilSketch id="trex" className="fossil" />
+    </div>
   );
 }
 function App() {
-  const [page, setPage] = useState<(typeof pages)[number]>("Focus");
+  const [page, setPage] = useState<(typeof pages)[number]>(
+    isSampleWorkspace ? "Dashboard" : "Focus",
+  );
   const [sessions, setSessions] = useState<Session[]>(demoStore.getSessions);
   const [active, setActive] = useState<ActiveSession | null>(
     demoStore.getActive,
@@ -201,23 +193,45 @@ function App() {
           </span>
         </header>
         <div className="content">
+          {!isSampleWorkspace && (
+            <p className="sample-entry">
+              <a href="?demo=sample">Explore the sample dashboard ↗</a>
+            </p>
+          )}
           {isSampleWorkspace && (
-            <section className="sample-banner" aria-label="Sample data workspace">
-              <p><strong>Sample data for M2</strong> Fictional history in a separate demo workspace.</p>
+            <section
+              className="sample-banner"
+              aria-label="Sample data workspace"
+            >
+              <p>
+                <strong>Sample dashboard</strong> 28 days of fictional history.
+                Reset to refresh the dates.
+              </p>
               <button
                 className="text-button"
                 disabled={!!active}
                 onClick={() => {
-                  if (!window.confirm("Reset this sample workspace to 8 sessions and 149 minutes? This removes sessions added during this demo. Your ordinary workspace is unchanged.")) return;
+                  if (
+                    !window.confirm(
+                      "Regenerate 28 days of fictional history? This removes sessions added during this demo. Your ordinary workspace is unchanged.",
+                    )
+                  )
+                    return;
                   try {
                     resetSampleWorkspace();
                     setSessions(demoStore.getSessions());
-                    setNotice("Sample workspace reset to 8 sessions and 149 minutes.");
+                    setNotice(
+                      "Sample history refreshed. Dashboard and museum now use the new sample sessions.",
+                    );
                   } catch {
-                    setNotice("Unable to reset. Allow browser storage and try again.");
+                    setNotice(
+                      "Unable to reset. Allow browser storage and try again.",
+                    );
                   }
                 }}
-              >Reset sample data</button>
+              >
+                Reset sample data
+              </button>
             </section>
           )}
           <div className="page-heading">
@@ -376,7 +390,8 @@ function App() {
             <FossilMuseum
               totalMinutes={total}
               storageScope={
-                new URLSearchParams(window.location.search).get("demo") === "sample"
+                new URLSearchParams(window.location.search).get("demo") ===
+                "sample"
                   ? "sample"
                   : "default"
               }

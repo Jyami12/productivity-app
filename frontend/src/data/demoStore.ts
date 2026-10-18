@@ -18,10 +18,10 @@ export interface ActiveSession {
   tag: string;
 }
 const sessionKey = isSampleWorkspace
-    ? "dinofocus.m2.sample.sessions.v1"
+    ? "dinofocus.m2.sample.sessions.v2"
     : "dinofocus.demo.sessions.v1",
   activeKey = isSampleWorkspace
-    ? "dinofocus.m2.sample.active.v1"
+    ? "dinofocus.m2.sample.active.v2"
     : "dinofocus.demo.active.v1";
 
 // Only the separate sample workspace is reset. Ordinary browser history is untouched.
