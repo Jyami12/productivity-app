@@ -549,3 +549,57 @@
     width: 100%;
   }
 }
+
+/* Keep fossil details within the viewport; artwork gives up space first. */
+.fm-dialog {
+  box-sizing: border-box;
+  width: min(500px, calc(100vw - 24px));
+  height: min(610px, calc(100dvh - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+.fm-dialog .fm-detail {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  padding: 28px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.fm-dialog .fm-detail > :not(.fm-detail-art) { flex-shrink: 0; }
+.fm-dialog .fm-detail-art {
+  flex: 1 1 220px;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 8px;
+  overflow: hidden;
+}
+.fm-dialog .fm-detail-art .fm-art { min-height: 0; }
+.fm-dialog .fm-detail .fm-group { margin: 0; }
+.fm-dialog .fm-detail h2 { font-size: 24px; margin: 0; line-height: 1.2; }
+.fm-dialog .fm-detail p { margin: 0; font-size: 12px; line-height: 1.4; }
+.fm-dialog .fm-detail .fm-detail-caption { font-size: 11px; }
+.fm-dialog .fm-focus-button { margin-top: 2px; padding: 11px 16px; }
+@media (max-height: 500px) and (min-width: 600px) {
+  .fm-dialog { width: min(680px, calc(100vw - 24px)); }
+  .fm-dialog .fm-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(8, auto);
+    align-content: center;
+    align-items: center;
+    gap: 6px 20px;
+    padding: 22px 24px 16px;
+  }
+  .fm-dialog .fm-detail > :not(.fm-detail-art):not(.fm-close) { grid-column: 2; }
+  .fm-dialog .fm-detail-art { grid-column: 1; grid-row: 1 / 9; height: 100%; max-height: calc(100dvh - 70px); box-sizing: border-box; }
+  .fm-dialog .fm-detail h2 { font-size: 21px; }
+}
+@media (max-height: 550px) and (max-width: 599px) {
+  .fm-dialog .fm-detail { padding: 24px 16px 12px; gap: 5px; }
+  .fm-dialog .fm-detail h2 { font-size: 20px; }
+  .fm-dialog .fm-focus-button { padding: 9px 12px; }
+}

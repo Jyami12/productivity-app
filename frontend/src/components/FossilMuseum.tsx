@@ -93,50 +93,48 @@ export default function FossilMuseum({
   }
   return (
     <section className="fm" aria-label="Fossil collection">
-      <header className="fm-heading">
-        <div>
-          <span className="fm-kicker">FIELD COLLECTION</span>
-          <h2>The fossil index</h2>
-          <p>Every specimen comes from time you put in.</p>
+      <div className="fm-toolbar">
+        <header className="fm-heading">
+          <div className="fm-count">
+            <strong>
+              {collected}
+              <span> / {FOSSILS.length}</span>
+            </strong>
+            <span>fossils collected</span>
+          </div>
+        </header>
+        <div className="fm-tools">
+          <label className="fm-search">
+            <span>Search fossils</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name or collection…"
+            />
+          </label>
+          <span className="fm-total">
+            {minutes.toLocaleString()} focused minutes
+          </span>
         </div>
-        <div className="fm-count">
-          <strong>
-            {collected}
-            <span> / {FOSSILS.length}</span>
-          </strong>
-          <span>fossils collected</span>
+        <div className="fm-art-controls">
+          <label>
+            Illustration style
+            <select
+              value={artStyle}
+              onChange={(e) => setArtStyle(e.target.value as ArtStyle)}
+            >
+              <option value="sketch">Field sketches · offline</option>
+              <option value="archive">Open collection · online</option>
+            </select>
+          </label>
+          {artStyle === "archive" && (
+            <p>
+              Five freely licensed illustrations. Local sketches appear for
+              other fossils or if an image cannot load.
+            </p>
+          )}
         </div>
-      </header>
-      <div className="fm-tools">
-        <label className="fm-search">
-          <span>Search fossils</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or collection…"
-          />
-        </label>
-        <span className="fm-total">
-          {minutes.toLocaleString()} focused minutes
-        </span>
-      </div>
-      <div className="fm-art-controls">
-        <label>
-          Illustration style
-          <select
-            value={artStyle}
-            onChange={(e) => setArtStyle(e.target.value as ArtStyle)}
-          >
-            <option value="sketch">Field sketches · offline</option>
-            <option value="archive">Open collection · online</option>
-          </select>
-        </label>
-        <p>
-          {artStyle === "sketch"
-            ? "Twelve original decorative studies, drawn to match your collection."
-            : "Five freely licensed illustrations. Local sketches appear for other fossils or if an image cannot load."}
-        </p>
       </div>
       <div className="fm-filters" role="group" aria-label="Filter fossils">
         {FILTERS.map((item) => (
@@ -261,10 +259,6 @@ export default function FossilMuseum({
           </button>
         </div>
       )}
-      <p className="fm-footnote">
-        Fossils unlock at total focus-minute milestones. Your minutes are never
-        spent.
-      </p>
       <details className="fm-credits">
         <summary>About the illustrations & artwork credits</summary>
         <p>
