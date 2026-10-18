@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   demoStore,
   elapsedSeconds,
@@ -9,20 +9,15 @@ import {
 } from "./data/demoStore";
 import FossilMuseum from "./components/FossilMuseum";
 import FossilSketch from "./components/FossilSketch";
+import FossilReveal from "./components/FossilReveal";
 import "./App.css";
 import TimeAnalytics from "./components/TimeAnalytics";
+import FocusWeek from "./components/FocusWeek";
+import { FOSSILS, type FossilDefinition } from "./data/fossils";
+import { dateKey, formatDuration } from "./data/timeAnalytics";
+import "./Refinements.css";
 const pages = ["Focus", "Dashboard", "Museum", "History", "Groups"] as const;
 const tags = ["Deep work", "Studying", "Reading", "Creative work"];
-function Fossil() {
-  return (
-    <div
-      role="img"
-      aria-label="Detailed decorative Tyrannosaurus skeleton sketch"
-    >
-      <FossilSketch id="trex" className="fossil" />
-    </div>
-  );
-}
 function App() {
   const [page, setPage] = useState<(typeof pages)[number]>(
     isSampleWorkspace ? "Dashboard" : "Focus",
@@ -36,6 +31,20 @@ function App() {
     [tag, setTag] = useState(tags[0]),
     [now, setNow] = useState(() => Date.now()),
     [notice, setNotice] = useState("");
+  const [receipt, setReceipt] = useState<{
+    seconds: number;
+    tag: string;
+    unlocked: FossilDefinition[];
+  } | null>(null);
+  const receiptDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (receipt && receiptDialog.current && !receiptDialog.current.open)
+      receiptDialog.current.showModal();
+  }, [receipt]);
+  function closeReceipt() {
+    receiptDialog.current?.close();
+    setReceipt(null);
+  }
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
@@ -45,8 +54,19 @@ function App() {
     (active?.mode ?? mode) === "stopwatch"
       ? elapsed
       : Math.max(0, (active?.duration ?? duration) * 60 - elapsed);
-  const total = sessions.reduce((sum, s) => sum + s.seconds / 60, 0),
-    progress = Math.min(100, Math.floor((total / 150) * 100));
+  const total = sessions.reduce((sum, s) => sum + s.seconds / 60, 0);
+  const nextFossil = FOSSILS.find((f) => total < f.target);
+  const featured = nextFossil ?? FOSSILS[FOSSILS.length - 1];
+  const collected = FOSSILS.filter((f) => total >= f.target).length;
+  const progress = Math.min(100, Math.floor((total / featured.target) * 100));
+  const todaySessions = sessions.filter(
+    (s) => s.completedAt <= now && dateKey(s.completedAt) === dateKey(now),
+  );
+  const todaySeconds = todaySessions.reduce((sum, s) => sum + s.seconds, 0);
+  const timerProgress =
+    active?.mode === "countdown"
+      ? Math.min(100, (elapsed / (active.duration * 60)) * 100)
+      : 0;
   const ready =
     !!active && (active.mode === "stopwatch" ? elapsed >= 60 : display === 0);
   function start() {
@@ -54,13 +74,25 @@ function App() {
     demoStore.setActive(next);
     setActive(next);
     setNow(Date.now());
-    setNotice("Your excavation has begun. One thing at a time.");
+    setNotice(`${tag} session started.`);
   }
   function finish(cancel = false) {
     if (!active || (!cancel && !ready)) return;
     if (!cancel) {
-      setSessions(demoStore.complete(active, Date.now()));
-      setNotice("Session saved. A little more history, uncovered.");
+      const completed = demoStore.complete(active, Date.now());
+      const saved = completed.find((s) => s.id === String(active.startedAt));
+      setSessions(completed);
+      if (saved && !sessions.some((s) => s.id === saved.id)) {
+        const newTotal = completed.reduce((sum, s) => sum + s.seconds / 60, 0);
+        setReceipt({
+          seconds: saved.seconds,
+          tag: saved.tag,
+          unlocked: FOSSILS.filter(
+            (f) => f.target > total && f.target <= newTotal,
+          ),
+        });
+      }
+      setNotice("Session saved to your history.");
     } else setNotice("Session cancelled. No time or fossil progress added.");
     demoStore.setActive(null);
     setActive(null);
@@ -100,21 +132,45 @@ function App() {
   const specimen = (
     <section className="dig-card">
       <div className="card-label">
-        <span>YOUR CURRENT EXCAVATION</span>
-        <span>02 / THE DISCOVERY</span>
+        <span>{nextFossil ? "UP NEXT" : "COLLECTION COMPLETE"}</span>
+        <span>
+          {String(FOSSILS.indexOf(featured) + 1).padStart(3, "0")} / FIELD
+          COLLECTION
+        </span>
       </div>
       <div className="dig-art">
         <div className="orbit" />
         <div className="orbit second" />
-        <span className="coordinate">SITE 001 · 46° N / 108° W</span>
-        <Fossil />
-        <span className="specimen-label">SPECIMEN / T. REX</span>
+        <span className="coordinate">{featured.group.toUpperCase()}</span>
+        <div
+          className="desk-fossil"
+          role="img"
+          aria-label={`${featured.name}, ${progress}% uncovered`}
+        >
+          <FossilReveal
+            id={featured.id}
+            percent={progress}
+            className="fossil"
+            centered
+          />
+        </div>
+        <span className="specimen-label">
+          {nextFossil
+            ? `${Math.ceil(featured.target - total)} MIN TO DISCOVER`
+            : "ALL 12 SPECIMENS COLLECTED"}
+        </span>
         <span className="art-star">✧</span>
       </div>
       <div className="dig-info">
-        <span className="pill">LATE CRETACEOUS</span>
-        <h2>Tyrannosaurus rex</h2>
-        <p>A legendary discovery, one focused minute at a time.</p>
+        <span className="pill">
+          {nextFossil ? "YOUR NEXT FIND" : "IN YOUR MUSEUM"}
+        </span>
+        <h2>{featured.name}</h2>
+        <p>
+          {nextFossil
+            ? `Keep going. This one joins your collection at ${featured.target} total minutes.`
+            : "The whole collection is yours. Pick a favorite in the museum."}
+        </p>
         <div className="progress-label">
           <span>Excavation progress</span>
           <strong>{progress}%</strong>
@@ -126,13 +182,12 @@ function App() {
         />
         <div className="dig-bottom">
           <span>
-            {Math.max(0, 150 - Math.floor(total))} focused minutes to uncover
+            {nextFossil
+              ? `${Math.ceil(featured.target - total)} minutes to go`
+              : "12 / 12 collected"}
           </span>
           <button onClick={() => setPage("Museum")}>View museum ↗</button>
         </div>
-        <small className="art-note">
-          Skeleton illustration preview · demo reward pacing
-        </small>
       </div>
     </section>
   );
@@ -167,11 +222,20 @@ function App() {
         <div className="sidebar-note">
           <span>✧</span>
           <p>
-            Big discoveries.
+            {collected} of 12
             <br />
-            Small, focused steps.
+            specimens found.
           </p>
-          <small>Make a little progress today.</small>
+          <progress
+            value={collected}
+            max={12}
+            aria-label="Collection completion"
+          />
+          <small>
+            {nextFossil
+              ? `Next: ${nextFossil.name}`
+              : "Your collection is complete."}
+          </small>
         </div>
         <div className="profile">
           <span>EX</span>
@@ -187,6 +251,14 @@ function App() {
             Your workspace <span className="slash">/</span>
             <strong>{page}</strong>
           </span>
+          {active && (
+            <button className="running-pill" onClick={() => setPage("Focus")}>
+              <i aria-hidden="true" />
+              {String(Math.floor(display / 60)).padStart(2, "0")}:
+              {String(display % 60).padStart(2, "0")}{" "}
+              <span>{ready ? "Ready to save" : "Focusing"} ↗</span>
+            </button>
+          )}
           <span className="demo-badge">
             <i />
             Frontend demo
@@ -204,8 +276,8 @@ function App() {
               aria-label="Sample data workspace"
             >
               <p>
-                <strong>Sample dashboard</strong> 28 days of fictional history.
-                Reset to refresh the dates.
+                <strong>Sample dashboard</strong> 120 fictional minutes. Reset
+                to refresh the dates.
               </p>
               <button
                 className="text-button"
@@ -213,7 +285,7 @@ function App() {
                 onClick={() => {
                   if (
                     !window.confirm(
-                      "Regenerate 28 days of fictional history? This removes sessions added during this demo. Your ordinary workspace is unchanged.",
+                      "Reset to 120 fictional minutes and five collected fossils? This removes sessions added during this demo. Your ordinary workspace is unchanged.",
                     )
                   )
                     return;
@@ -235,37 +307,61 @@ function App() {
             </section>
           )}
           <div className="page-heading">
-            <div className="eyebrow">SLOW DOWN. DIG DEEP.</div>
+            <div className="eyebrow">
+              {new Date(now).toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+            </div>
             <h1>
               {page === "Focus"
-                ? "A little focus. A big discovery."
+                ? "Ready when you are."
                 : page === "Dashboard"
-                  ? "See your effort take shape."
+                  ? "Your time, well spent."
                   : page === "Museum"
-                    ? "Your discoveries live here."
+                    ? "Look what you’ve uncovered."
                     : page === "History"
-                      ? "Every session is a small step."
-                      : "Good focus finds company."}
+                      ? "Your session log."
+                      : "Focus with your people."}
             </h1>
             <p>
               {page === "Focus"
-                ? "Settle into your work. There’s something waiting beneath the surface."
-                : "A field journal of the time you’ve made for what matters."}
+                ? "Choose one thing. Give it a little time."
+                : page === "Dashboard"
+                  ? "See what you worked on, and when it clicked."
+                  : page === "Museum"
+                    ? "A collection built one session at a time."
+                    : "Your work, saved here."}
             </p>
           </div>
           {page === "Focus" && (
             <>
+              <div className="today-strip" aria-label="Today's progress">
+                <span>
+                  <strong>{formatDuration(todaySeconds)}</strong> focused today
+                </span>
+                <span>
+                  <strong>{todaySessions.length}</strong>{" "}
+                  {todaySessions.length === 1 ? "session" : "sessions"} saved
+                </span>
+                <button onClick={() => setPage("Museum")}>
+                  <strong>{collected}/12</strong> fossils{" "}
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </div>
               <div className="focus-grid">
                 <section className="card timer-card">
                   <div className="card-label">
-                    <span>● FOCUS SESSION</span>
-                    <span>01 / THE WORK</span>
+                    <span>YOUR SESSION</span>
+                    <span>{active ? "IN PROGRESS" : "MAKE SOME ROOM"}</span>
                   </div>
                   <div className="segmented" aria-label="Timer mode">
                     {(["countdown", "stopwatch"] as const).map((m) => (
                       <button
                         key={m}
                         disabled={!!active}
+                        aria-pressed={(active?.mode ?? mode) === m}
                         className={(active?.mode ?? mode) === m ? "active" : ""}
                         onClick={() => setMode(m)}
                       >
@@ -273,13 +369,32 @@ function App() {
                       </button>
                     ))}
                   </div>
-                  <div className="timer-face">
+                  <div
+                    className={`timer-face ${active ? "timer-running" : ""} ${ready ? "timer-ready" : ""}`}
+                  >
+                    <svg
+                      className="timer-ring"
+                      viewBox="0 0 280 280"
+                      aria-hidden="true"
+                    >
+                      <circle cx="140" cy="140" r="132" />
+                      <circle
+                        cx="140"
+                        cy="140"
+                        r="132"
+                        pathLength="100"
+                        strokeDasharray="100"
+                        strokeDashoffset={100 - timerProgress}
+                      />
+                    </svg>
                     <span className="timer-caption">
                       {active
                         ? ready
-                          ? "NICELY DONE"
-                          : "STAY WITH IT"
-                        : "TIME TO FOCUS"}
+                          ? active.mode === "stopwatch"
+                            ? "KEEP GOING OR SAVE"
+                            : "SESSION COMPLETE"
+                          : active.tag.toUpperCase()
+                        : "YOUR NEXT SESSION"}
                     </span>
                     <div className="timer-digits" role="timer">
                       {String(Math.floor(display / 60)).padStart(2, "0")}
@@ -289,15 +404,37 @@ function App() {
                     <span className="timer-subtitle">
                       {active
                         ? ready
-                          ? "Save your session below"
-                          : "Your next discovery is getting closer"
-                        : "One session. One step forward."}
+                          ? "Your time is ready to save"
+                          : active.mode === "countdown"
+                            ? `${Math.floor(timerProgress)}% of your session`
+                            : "Counting up. Take your time."
+                        : "A small start counts."}
                     </span>
                   </div>
+                  {(active?.mode ?? mode) === "countdown" && (
+                    <div
+                      className="duration-picks"
+                      role="group"
+                      aria-label="Quick duration"
+                    >
+                      {[15, 25, 45, 60].map((d) => (
+                        <button
+                          key={d}
+                          disabled={!!active}
+                          aria-pressed={(active?.duration ?? duration) === d}
+                          onClick={() => setDuration(d)}
+                        >
+                          {d}
+                          <span> min</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div className="session-options">
                     <label>
                       Working on
                       <select
+                        aria-label="Working on"
                         value={active?.tag ?? tag}
                         disabled={!!active}
                         onChange={(e) => setTag(e.target.value)}
@@ -310,6 +447,7 @@ function App() {
                     <label>
                       Duration
                       <select
+                        aria-label="Duration"
                         value={active?.duration ?? duration}
                         disabled={!!active || mode === "stopwatch"}
                         onChange={(e) => setDuration(Number(e.target.value))}
@@ -365,16 +503,11 @@ function App() {
                   </div>
                   {list}
                 </section>
-                <section className="quote-card">
-                  <span>THE FIELD NOTES</span>
-                  <blockquote>
-                    Make room for one thing.
-                    <br />
-                    The rest can wait.
-                  </blockquote>
-                  <small>A little encouragement for your next session.</small>
-                  <span className="quote-flower">✳</span>
-                </section>
+                <FocusWeek
+                  sessions={sessions}
+                  now={now}
+                  onOpen={() => setPage("Dashboard")}
+                />
               </div>
             </>
           )}
@@ -435,6 +568,57 @@ function App() {
           </footer>
         </div>
       </main>
+      <dialog
+        ref={receiptDialog}
+        className="session-receipt"
+        aria-labelledby="receipt-title"
+        onClose={() => setReceipt(null)}
+      >
+        {receipt && (
+          <div>
+            <span className="receipt-check" aria-hidden="true">
+              ✓
+            </span>
+            <span className="receipt-label">SESSION SAVED</span>
+            <h2 id="receipt-title">That’s time well spent.</h2>
+            <p className="receipt-total">+{formatDuration(receipt.seconds)}</p>
+            <p>{receipt.tag} · added to your history</p>
+            {receipt.unlocked.length > 0 ? (
+              <div className="receipt-unlocks">
+                <strong>
+                  {receipt.unlocked.length === 1
+                    ? "New fossil uncovered"
+                    : `${receipt.unlocked.length} fossils uncovered`}
+                </strong>
+                {receipt.unlocked.map((f) => (
+                  <div key={f.id}>
+                    <FossilSketch id={f.id} />
+                    <span>{f.name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="receipt-next">
+                {nextFossil
+                  ? `${Math.ceil(nextFossil.target - total)} more minutes to ${nextFossil.name}.`
+                  : "Your full collection is waiting in the museum."}
+              </p>
+            )}
+            <button
+              className="primary"
+              onClick={() => {
+                closeReceipt();
+                setPage("Museum");
+              }}
+            >
+              View collection →
+            </button>
+            <button className="text-button" onClick={closeReceipt}>
+              Done for now
+            </button>
+          </div>
+        )}
+      </dialog>
     </div>
   );
 }

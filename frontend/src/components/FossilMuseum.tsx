@@ -1,104 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import "./FossilMuseum.css";
-import { FossilIllustration } from "./FossilSketch";
+import FossilReveal from "./FossilReveal";
 import { SOURCED_ART, type ArtStyle } from "../data/fossilArtwork";
 
-type FossilDefinition = {
-  id: string;
-  name: string;
-  group: string;
-  target: number;
-  color: string;
-};
-
-// Original stylized SVG illustrations, not scientific reconstructions.
-// Targets are cumulative focus-minute milestones. Minutes are not spent.
-const FOSSILS: FossilDefinition[] = [
-  {
-    id: "ammonite",
-    name: "Ammonite",
-    group: "Ocean collection",
-    target: 15,
-    color: "#ad794d",
-  },
-  {
-    id: "trilobite",
-    name: "Trilobite",
-    group: "Ocean collection",
-    target: 30,
-    color: "#74876b",
-  },
-  {
-    id: "stegosaurus",
-    name: "Stegosaurus",
-    group: "Dinosaur collection",
-    target: 45,
-    color: "#8c9568",
-  },
-  {
-    id: "triceratops",
-    name: "Triceratops",
-    group: "Dinosaur collection",
-    target: 60,
-    color: "#ae8c65",
-  },
-  {
-    id: "velociraptor",
-    name: "Velociraptor",
-    group: "Dinosaur collection",
-    target: 90,
-    color: "#8f8064",
-  },
-  {
-    id: "trex",
-    name: "Tyrannosaurus rex",
-    group: "Dinosaur collection",
-    target: 150,
-    color: "#718b58",
-  },
-  {
-    id: "brachiosaurus",
-    name: "Brachiosaurus",
-    group: "Dinosaur collection",
-    target: 210,
-    color: "#899d7a",
-  },
-  {
-    id: "pteranodon",
-    name: "Pteranodon",
-    group: "Flying collection",
-    target: 270,
-    color: "#aa9575",
-  },
-  {
-    id: "spinosaurus",
-    name: "Spinosaurus",
-    group: "Dinosaur collection",
-    target: 360,
-    color: "#9a856d",
-  },
-  {
-    id: "ankylosaurus",
-    name: "Ankylosaurus",
-    group: "Dinosaur collection",
-    target: 450,
-    color: "#8e997c",
-  },
-  {
-    id: "plesiosaurus",
-    name: "Plesiosaurus",
-    group: "Ocean collection",
-    target: 600,
-    color: "#75938b",
-  },
-  {
-    id: "mammoth",
-    name: "Mammoth",
-    group: "Ice age collection",
-    target: 750,
-    color: "#a58a71",
-  },
-];
+import { FOSSILS, type FossilDefinition } from "../data/fossils";
 
 type Filter = "All" | "Collected" | "Excavating" | "Locked" | "Favorites";
 const FILTERS: Filter[] = [
@@ -190,9 +95,9 @@ export default function FossilMuseum({
     <section className="fm" aria-label="Fossil collection">
       <header className="fm-heading">
         <div>
-          <span className="fm-kicker">THE FOSSIL INDEX</span>
-          <h2>Your collection</h2>
-          <p>A little more history, uncovered.</p>
+          <span className="fm-kicker">FIELD COLLECTION</span>
+          <h2>The fossil index</h2>
+          <p>Every specimen comes from time you put in.</p>
         </div>
         <div className="fm-count">
           <strong>
@@ -299,9 +204,10 @@ export default function FossilMuseum({
                   className="fm-art-stage"
                   style={{ color: state === "Locked" ? "#b7beb0" : f.color }}
                 >
-                  <FossilIllustration
+                  <FossilReveal
                     key={`${f.id}-${artStyle}`}
                     id={f.id}
+                    percent={state === "Locked" ? 0 : percentage(f)}
                     style={artStyle}
                     className="fm-art"
                   />
@@ -411,9 +317,12 @@ export default function FossilMuseum({
               SPECIMEN #{String(FOSSILS.indexOf(selected) + 1).padStart(3, "0")}
             </span>
             <div className="fm-detail-art" style={{ color: selected.color }}>
-              <FossilIllustration
+              <FossilReveal
                 key={`${selected.id}-${artStyle}`}
                 id={selected.id}
+                percent={
+                  status(selected) === "Locked" ? 0 : percentage(selected)
+                }
                 style={artStyle}
                 className="fm-art"
               />

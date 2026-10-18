@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { SOURCED_ART, type ArtStyle } from "../data/fossilArtwork";
 
 // Original decorative vector sketches, not scientific reconstructions.
@@ -464,14 +464,31 @@ function Mammoth() {
 export default function FossilSketch({
   id,
   className = "",
+  centered = false,
 }: {
   id: string;
   className?: string;
+  centered?: boolean;
 }) {
+  const drawing = useRef<SVGGElement>(null);
+  useLayoutEffect(() => {
+    const group = drawing.current;
+    if (!group) return;
+    if (!centered) {
+      group.removeAttribute("transform");
+      return;
+    }
+    const bounds = group.getBBox();
+    group.setAttribute(
+      "transform",
+      `translate(${320 - bounds.x - bounds.width / 2} ${180 - bounds.y - bounds.height / 2})`,
+    );
+  }, [id, centered]);
   return (
     <svg
       className={className}
       viewBox="0 0 640 360"
+      preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
       focusable="false"
     >
@@ -481,7 +498,7 @@ export default function FossilSketch({
           <path key={i} d={`M${80 + i * 20} 319v${i % 5 === 0 ? 8 : 4}`} />
         ))}
       </g>
-      <g>
+      <g ref={drawing} data-fossil-drawing="true">
         {["trex", "velociraptor", "spinosaurus"].includes(id) ? (
           <Theropod id={id} />
         ) : [
@@ -507,15 +524,17 @@ export function FossilIllustration({
   id,
   style = "sketch",
   className = "",
+  centered = false,
 }: {
   id: string;
   style?: ArtStyle;
   className?: string;
+  centered?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const art = SOURCED_ART[id];
   if (style !== "archive" || !art || failed)
-    return <FossilSketch id={id} className={className} />;
+    return <FossilSketch id={id} className={className} centered={centered} />;
   return (
     <img
       className={`${className} fm-archive-image`}
