@@ -1,0 +1,12 @@
+node_modules
+dist
+*.log
+
+# Secrets: never commit real connection strings
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+/src/generated/prisma
