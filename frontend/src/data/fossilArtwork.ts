@@ -1,5 +1,5 @@
 // Source descriptions and reuse terms checked on 2026-10-17.
-export type ArtStyle = "sketch" | "archive";
+export type ArtStyle = "sketch" | "archive" | "mascot";
 export const SOURCED_ART: Record<
   string,
   {

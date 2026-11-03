@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none">
+  <title>Brachiosaurus — DinoFocus original mascot illustration</title>
+  <ellipse cx="321" cy="320" rx="205" ry="10" fill="#244735" opacity=".08"/>
+  <path d="M243 228C218 227 192 242 175 267L168 306Q168 320 183 320H207Q218 320 219 307L226 280H284L292 309Q294 320 307 320H326Q339 320 336 306L325 264Z" fill="#173e30"/>
+  <path d="M144 251C111 251 88 224 67 211Q55 205 61 220C83 270 121 293 176 285L202 292L200 309Q200 324 215 324H239Q250 324 251 311L254 284Q281 292 306 281L321 312Q325 324 338 324H360Q372 324 366 310L353 263C370 242 373 210 371 176L369 106Q369 85 386 82C398 91 409 97 428 94C454 91 467 78 464 61Q461 47 441 43C430 21 402 19 382 29C352 42 332 67 319 96L284 170C262 165 237 163 211 169C169 178 144 211 144 251Z" fill="#244c3a"/>
+  <path d="M303 196C325 161 339 121 343 92" stroke="#3e6650" stroke-width="13" stroke-linecap="round"/>
+  <ellipse cx="187" cy="228" rx="15" ry="23" transform="rotate(28 187 228)" fill="#96a86e"/>
+  <ellipse cx="233" cy="205" rx="26" ry="17" transform="rotate(-12 233 205)" fill="#96a86e"/>
+  <ellipse cx="279" cy="226" rx="16" ry="21" transform="rotate(-30 279 226)" fill="#96a86e"/>
+  <circle cx="410" cy="49" r="7" fill="#faf9ef"/>
+  <path d="M426 73Q440 81 453 72" stroke="#faf9ef" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="420" cy="65" r="7" fill="#96a86e" opacity=".5"/>
+  <path d="M489 144L493 155L504 159L493 163L489 174L485 163L474 159L485 155Z" fill="#96a86e"/>
+  <path d="M125 162L128 169L135 172L128 175L125 182L122 175L115 172L122 169Z" fill="#96a86e" opacity=".65"/>
+  <circle cx="519" cy="199" r="4" fill="#96a86e" opacity=".55"/>
+</svg>

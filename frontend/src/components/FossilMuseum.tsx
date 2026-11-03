@@ -27,7 +27,7 @@ export default function FossilMuseum({
     ? Math.max(0, Math.floor(totalMinutes))
     : 0;
   const [query, setQuery] = useState("");
-  const [artStyle, setArtStyle] = useState<ArtStyle>("sketch");
+  const [artStyle, setArtStyle] = useState<ArtStyle>("mascot");
   const [filter, setFilter] = useState<Filter>("All");
   const [selected, setSelected] = useState<FossilDefinition | null>(null);
   const favoriteKey = `dinofocus.museum.favorites.${storageScope}.v1`;
@@ -124,6 +124,7 @@ export default function FossilMuseum({
               value={artStyle}
               onChange={(e) => setArtStyle(e.target.value as ArtStyle)}
             >
+              <option value="mascot">Logo style · Brachiosaurus preview</option>
               <option value="sketch">Field sketches · offline</option>
               <option value="archive">Open collection · online</option>
             </select>

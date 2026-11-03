@@ -533,6 +533,15 @@ export function FossilIllustration({
 }) {
   const [failed, setFailed] = useState(false);
   const art = SOURCED_ART[id];
+  if (style === "mascot" && id === "brachiosaurus")
+    return (
+      <img
+        className={`${className} mascot-specimen`}
+        src="/art/brachiosaurus-mascot.svg"
+        alt=""
+        aria-hidden="true"
+      />
+    );
   if (style !== "archive" || !art || failed)
     return <FossilSketch id={id} className={className} centered={centered} />;
   return (
