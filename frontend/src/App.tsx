@@ -12,6 +12,7 @@ import FossilMuseum from "./components/FossilMuseum";
 import FossilSketch from "./components/FossilSketch";
 import FossilReveal from "./components/FossilReveal";
 import "./App.css";
+import AccountButton from "./auth/AccountButton";
 import TimeAnalytics from "./components/TimeAnalytics";
 import FocusWeek from "./components/FocusWeek";
 import { FOSSILS, type FossilDefinition } from "./data/fossils";
@@ -266,13 +267,7 @@ function App() {
               : "Your collection is complete."}
           </small>
         </div>
-        <div className="profile">
-          <span>EX</span>
-          <div>
-            <strong>Explorer</strong>
-            <small>Local demo workspace</small>
-          </div>
-        </div>
+        <AccountButton variant="sidebar" />
       </aside>
       <main>
         <header className="topbar">
@@ -332,6 +327,7 @@ function App() {
               <i />
               {isSampleWorkspace ? "Exit sample" : "Frontend demo ↗"}
             </a>
+            <AccountButton variant="topbar" />
           </div>
         </header>
         <div
