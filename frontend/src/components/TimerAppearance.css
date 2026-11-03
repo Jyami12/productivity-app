@@ -229,3 +229,78 @@
 .timer-personalized[data-layout="compact"] .timer-digits {
   font-size: min(46px, 20cqw);
 }
+
+/* Preview choices before applying them. */
+.timer-customize summary {
+  flex-wrap: wrap;
+  min-height: 44px;
+}
+.appearance-hint {
+  font-size: 11px;
+}
+.appearance-choices-layout,
+.appearance-choices-font {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.appearance-choices-layout button,
+.appearance-choices-font button {
+  position: relative;
+  flex-direction: column;
+  min-width: 0;
+  padding: 12px 6px;
+  gap: 8px;
+}
+.appearance-choices-layout .appearance-check,
+.appearance-choices-font .appearance-check {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+}
+.appearance-layout-preview {
+  display: grid;
+  place-items: center;
+  height: 58px;
+  width: 100%;
+  font:
+    500 17px ui-monospace,
+    monospace;
+  letter-spacing: -1px;
+}
+.preview-ring > span {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--timer-accent);
+  border-radius: 50%;
+  font-size: 12px;
+}
+.preview-compact > span {
+  border: 1px solid var(--timer-line);
+  border-radius: 5px;
+  padding: 7px 5px;
+  font-size: 13px;
+}
+.appearance-font-preview {
+  font-size: 23px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.appearance-choices button,
+.appearance-footer button {
+  min-height: 44px;
+}
+.appearance-choices button:hover {
+  border-color: var(--timer-accent);
+}
+@media (max-width: 400px) {
+  .appearance-hint {
+    flex-basis: calc(100% - 30px);
+    order: 2;
+  }
+  .appearance-choices-layout,
+  .appearance-choices-font {
+    gap: 5px;
+  }
+}

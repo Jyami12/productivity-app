@@ -44,6 +44,12 @@ function readAppearance(): Appearance {
 export default function TimerAppearance({ children }: { children: ReactNode }) {
   const [appearance, setAppearance] = useState(readAppearance);
   const [storageError, setStorageError] = useState(false);
+  const selectionLabel = Object.entries(choices)
+    .map(
+      ([key, options]) =>
+        options.find(([id]) => id === appearance[key as keyof Appearance])?.[1],
+    )
+    .join(" · ");
   function update(next: Appearance) {
     setAppearance(next);
     try {
@@ -63,10 +69,10 @@ export default function TimerAppearance({ children }: { children: ReactNode }) {
       <details className="timer-customize">
         <summary>
           <span aria-hidden="true">✧</span> Customize{" "}
-          <span className="appearance-hint">Make it yours</span>
+          <span className="appearance-hint">{selectionLabel}</span>
         </summary>
         <div className="appearance-options">
-          <p>A little space that feels like you. Applies to both timers.</p>
+          <p>Choose your look. Changes apply to both timers immediately.</p>
           {(Object.keys(choices) as (keyof Appearance)[]).map((key) => (
             <fieldset key={key}>
               <legend>
@@ -76,15 +82,32 @@ export default function TimerAppearance({ children }: { children: ReactNode }) {
                     ? "Number font"
                     : "Background"}
               </legend>
-              <div className="appearance-choices">
+              <div className={`appearance-choices appearance-choices-${key}`}>
                 {choices[key].map(([id, label]) => (
                   <button
                     type="button"
                     key={id}
                     aria-pressed={appearance[key] === id}
+                    aria-label={label}
                     onClick={() => update({ ...appearance, [key]: id })}
                     data-font-preview={key === "font" ? id : undefined}
                   >
+                    {key === "layout" && (
+                      <span
+                        className={`appearance-layout-preview preview-${id}`}
+                        aria-hidden="true"
+                      >
+                        <span>25:00</span>
+                      </span>
+                    )}
+                    {key === "font" && (
+                      <span
+                        className="appearance-font-preview"
+                        aria-hidden="true"
+                      >
+                        25:00
+                      </span>
+                    )}
                     {key === "background" && (
                       <i
                         className={"appearance-swatch swatch-" + id}
@@ -104,7 +127,7 @@ export default function TimerAppearance({ children }: { children: ReactNode }) {
             <small role="status">
               {storageError
                 ? "Changes apply now, but this browser could not save them."
-                : "Preferences saved in this browser."}
+                : "Your choices are saved in this browser."}
             </small>
             <button type="button" onClick={() => update({ ...defaults })}>
               Reset appearance
