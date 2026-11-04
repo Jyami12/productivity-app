@@ -4,6 +4,7 @@ import { prisma } from "../db.js";
 import { validationError } from "../errors.js";
 import { Prisma, type User } from "../generated/prisma/client.js";
 import { requireAuth } from "./middleware.js";
+import { type AuthRateLimits, authRateLimiters } from "./rateLimit.js";
 import { hashPassword, verifyPassword } from "./password.js";
 import { endSession, startSession } from "./sessions.js";
 
@@ -24,59 +25,64 @@ const publicUser = (user: User) => ({
   createdAt: user.createdAt,
 });
 
-export const authRouter = Router();
+export function createAuthRouter(limits: AuthRateLimits) {
+  const authRouter = Router();
+  const limit = authRateLimiters(limits);
 
-authRouter.post("/register", async (req, res) => {
-  const parsed = registerBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json(validationError(parsed.error));
-    return;
-  }
-  let user: User;
-  try {
-    user = await prisma.user.create({
-      data: {
-        email: parsed.data.email,
-        passwordHash: await hashPassword(parsed.data.password),
-      },
-    });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      res.status(409).json({
-        error: { code: "EMAIL_TAKEN", message: "An account with this email already exists." },
+  authRouter.post("/register", limit.register, async (req, res) => {
+    const parsed = registerBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(validationError(parsed.error));
+      return;
+    }
+    let user: User;
+    try {
+      user = await prisma.user.create({
+        data: {
+          email: parsed.data.email,
+          passwordHash: await hashPassword(parsed.data.password),
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        res.status(409).json({
+          error: { code: "EMAIL_TAKEN", message: "An account with this email already exists." },
+        });
+        return;
+      }
+      throw error;
+    }
+    await startSession(req, res, user.id);
+    res.status(201).json({ user: publicUser(user) });
+  });
+
+  authRouter.post("/login", limit.login, async (req, res) => {
+    const parsed = loginBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json(validationError(parsed.error));
+      return;
+    }
+    const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+    const valid = await verifyPassword(parsed.data.password, user?.passwordHash ?? null);
+    if (!user || !valid) {
+      // Same message either way, so the response doesn't reveal which emails exist.
+      res.status(401).json({
+        error: { code: "INVALID_CREDENTIALS", message: "Incorrect email or password." },
       });
       return;
     }
-    throw error;
-  }
-  await startSession(req, res, user.id);
-  res.status(201).json({ user: publicUser(user) });
-});
+    await startSession(req, res, user.id);
+    res.json({ user: publicUser(user) });
+  });
 
-authRouter.post("/login", async (req, res) => {
-  const parsed = loginBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json(validationError(parsed.error));
-    return;
-  }
-  const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
-  const valid = await verifyPassword(parsed.data.password, user?.passwordHash ?? null);
-  if (!user || !valid) {
-    // Same message either way, so the response doesn't reveal which emails exist.
-    res.status(401).json({
-      error: { code: "INVALID_CREDENTIALS", message: "Incorrect email or password." },
-    });
-    return;
-  }
-  await startSession(req, res, user.id);
-  res.json({ user: publicUser(user) });
-});
+  authRouter.post("/logout", async (req, res) => {
+    await endSession(req, res);
+    res.status(204).end();
+  });
 
-authRouter.post("/logout", async (req, res) => {
-  await endSession(req, res);
-  res.status(204).end();
-});
+  authRouter.get("/me", requireAuth, (_req, res) => {
+    res.json({ user: publicUser(res.locals.user!) });
+  });
 
-authRouter.get("/me", requireAuth, (_req, res) => {
-  res.json({ user: publicUser(res.locals.user!) });
-});
+  return authRouter;
+}

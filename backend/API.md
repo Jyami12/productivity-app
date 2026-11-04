@@ -40,6 +40,7 @@ The existing `ApiError` class in `client.ts` already exposes `status`, `code`, `
 | 409 | `SESSION_NOT_PAUSED` | Resume: not paused. |
 | 409 | `SESSION_NOT_ACTIVE` | The session already ended (completed or cancelled). |
 | 409 | `SESSION_CONFLICT` | Rare: the session was changed by another request at the same moment. Retry. |
+| 429 | `RATE_LIMITED` | Too many failed logins, or too many sign-ups, from this network (10 per 15 minutes). Show the message; the `Retry-After` header gives the seconds to wait. |
 | 500 | `INTERNAL` | Server error. |
 
 ---
