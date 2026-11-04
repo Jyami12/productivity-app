@@ -1,0 +1,240 @@
+import { useId, useState } from "react";
+import "./FossilPlate.css";
+
+type Region = "all" | "skull" | "neck" | "ribs" | "limbs" | "tail";
+const regions: { id: Region; label: string; note: string }[] = [
+  {
+    id: "all",
+    label: "Whole skeleton",
+    note: "An original stylized skeletal study. Select a region to inspect its bones; this is an art preview, not a scientific reconstruction.",
+  },
+  {
+    id: "skull",
+    label: "Skull",
+    note: "Openings, a separate lower jaw, and small tooth marks give the head its fossil character.",
+  },
+  {
+    id: "neck",
+    label: "Neck & spine",
+    note: "Individual vertebrae follow the long neck into the back. Gaps keep the bones distinct at small sizes.",
+  },
+  {
+    id: "ribs",
+    label: "Rib cage",
+    note: "Tapered ribs curve from the backbone toward the underside of the torso.",
+  },
+  {
+    id: "limbs",
+    label: "Limbs",
+    note: "Angular joints, paired lower-leg bones, and separate toes replace the solid mascot silhouette.",
+  },
+  {
+    id: "tail",
+    label: "Tail",
+    note: "The vertebrae become smaller toward the tip of the tail.",
+  },
+];
+function Bone({
+  x,
+  y,
+  length,
+  angle,
+  width = 10,
+}: {
+  x: number;
+  y: number;
+  length: number;
+  angle: number;
+  width?: number;
+}) {
+  const w = width;
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${angle})`}>
+      <path
+        d={`M0 ${-w} L8 ${-w - 2} L15 ${-w / 2} L${length - 15} ${-w / 2} L${length - 8} ${-w} L${length} ${-w + 2} L${length + 2} ${w - 2} L${length - 7} ${w + 1} L${length - 15} ${w / 2} L15 ${w / 2} L7 ${w + 2} L-2 ${w - 1}Z`}
+      />
+      <path
+        className="fossil-etch"
+        d={`M18 -2 L${length - 18} -2 M7 ${-w} l3 5 -4 4 M${length - 8} 0 l-4 4 3 4`}
+      />
+    </g>
+  );
+}
+export default function FossilPlate({
+  className = "",
+  region = "all",
+}: {
+  className?: string;
+  region?: Region;
+}) {
+  const uid = useId();
+  return (
+    <svg
+      className={`fossil-plate ${className}`}
+      viewBox="0 0 640 360"
+      aria-hidden="true"
+      focusable="false"
+      data-region={region}
+    >
+      <defs>
+        <linearGradient id={uid} x2="0.4" y2="1">
+          <stop stopColor="#f7e8c8" />
+          <stop offset="1" stopColor="#bda078" />
+        </linearGradient>
+      </defs>
+      <path
+        className="fossil-strata"
+        d="M30 294L94 279 128 287 187 269 266 278 356 266 419 281 522 274 609 291 M40 309L129 301 199 311 296 296 411 306 496 294 600 312"
+      />
+      <g
+        data-fossil-drawing="true"
+        className="fossil-bones"
+        fill={`url(#${uid})`}
+      >
+        <g data-bones="tail">
+          {Array.from({ length: 20 }, (_, i) => {
+            const x = 48 + i * 9,
+              y = 242 - i * 2.4,
+              w = 3 + i * 0.23;
+            return (
+              <path
+                key={i}
+                d={`M${x} ${y} l4 -${w} 5 1 1 ${w + 2} -5 3 -4 -1Z M${x + 4} ${y - w} l1 -5 3 5`}
+              />
+            );
+          })}
+        </g>
+        <g data-bones="neck">
+          {Array.from({ length: 15 }, (_, i) => {
+            const x = 229 + i * 9,
+              y = 190 - Math.sin((i / 14) * Math.PI) * 13;
+            return (
+              <path
+                key={i}
+                d={`M${x} ${y} l2 -7 6 -1 3 7 -2 7 -7 1Z M${x + 3} ${y - 7} l-1 -10 4 -3 2 12`}
+              />
+            );
+          })}
+          {Array.from({ length: 15 }, (_, i) => {
+            const x = 363 + i * 5.5,
+              y = 182 - i * 8.6;
+            return (
+              <g key={i} transform={`translate(${x} ${y}) rotate(-54)`}>
+                <path d="M-5 -7L2 -9 7 -5 7 4 1 8 -6 5Z M-1 -8L-4 -17 0 -19 4 -8" />
+                <path className="fossil-etch" d="M-3 -2L4 1" />
+              </g>
+            );
+          })}
+        </g>
+        <g data-bones="ribs">
+          {Array.from({ length: 11 }, (_, i) => {
+            const x = 257 + i * 8,
+              y = 185 - Math.sin((i / 10) * Math.PI) * 8,
+              d = 42 + Math.sin((i / 10) * Math.PI) * 27;
+            return (
+              <path
+                key={i}
+                d={`M${x} ${y} C${x - 20} ${y + 20} ${x - 17} ${y + d - 8} ${x + 7} ${y + d} L${x + 12} ${y + d - 2} C${x - 8} ${y + d - 12} ${x - 10} ${y + 24} ${x + 5} ${y + 3}Z`}
+              />
+            );
+          })}
+          <path d="M229 185L217 200 222 219 240 229 258 211 253 191 241 183Z M345 191L331 218 338 242 351 226 358 204Z" />
+          <path
+            className="fossil-etch"
+            d="M229 195L240 209 230 216 M344 204L339 222"
+          />
+        </g>
+        <g data-bones="limbs">
+          <g opacity=".55">
+            <Bone x={248} y={222} length={49} angle={69} width={7} />
+            <Bone x={266} y={273} length={38} angle={85} width={5} />
+            <Bone x={355} y={231} length={40} angle={72} width={7} />
+            <Bone x={368} y={275} length={36} angle={86} width={5} />
+          </g>
+          <Bone x={229} y={222} length={47} angle={104} width={10} />
+          <Bone x={216} y={274} length={36} angle={79} width={6} />
+          <Bone x={341} y={235} length={35} angle={90} width={9} />
+          <Bone x={340} y={277} length={34} angle={84} width={6} />
+          <path d="M228 275L232 302 229 309 225 303Z M350 277L355 304 352 311 348 305Z" />
+          {[224, 270, 344, 374].map((x) => (
+            <g key={x}>
+              {[0, 1, 2].map((i) => (
+                <path
+                  key={i}
+                  d={`M${x + i * 6} 314l5 -1 6 7 -1 4 -10 -1 -3 -4Z`}
+                />
+              ))}
+            </g>
+          ))}
+        </g>
+        <g data-bones="skull">
+          <path d="M441 48L449 34 470 29 490 36 504 49 502 62 480 67 466 61 450 65 439 58Z" />
+          <path
+            className="fossil-cavity"
+            d="M451 44L457 38 465 40 463 51 454 53Z M476 40L487 43 493 51 477 54Z"
+          />
+          <path d="M449 68L466 65 481 72 500 67 495 77 473 80 453 74Z" />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <path key={i} d={`M${477 + i * 5} 65l2 6 2 -7`} />
+          ))}
+          <path
+            className="fossil-etch"
+            d="M470 32L469 39 M442 55L450 58 M482 75L489 73"
+          />
+        </g>
+      </g>
+    </svg>
+  );
+}
+export function FossilInspector() {
+  const [region, setRegion] = useState<Region>("all");
+  const [zoom, setZoom] = useState(1);
+  return (
+    <section className="fossil-inspector" aria-label="Interactive fossil study">
+      <div className="fossil-inspector-heading">
+        <strong>Specimen study</strong>
+        <span>Art preview · does not unlock rewards</span>
+      </div>
+      <div
+        className="fossil-inspector-stage"
+        tabIndex={0}
+        aria-label="Fossil drawing. Scroll to inspect when zoomed in."
+      >
+        <div style={{ width: `${zoom * 100}%` }}>
+          <FossilPlate region={region} />
+        </div>
+      </div>
+      <div
+        className="fossil-region-controls"
+        role="group"
+        aria-label="Inspect bones"
+      >
+        {regions.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            aria-pressed={region === r.id}
+            onClick={() => setRegion(r.id)}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+      <p className="fossil-study-note" aria-live="polite">
+        {regions.find((r) => r.id === region)?.note}
+      </p>
+      <label className="fossil-zoom">
+        Magnification{" "}
+        <input
+          type="range"
+          min="1"
+          max="2"
+          step=".25"
+          value={zoom}
+          onChange={(e) => setZoom(Number(e.target.value))}
+        />
+        <output>{zoom}×</output>
+      </label>
+    </section>
+  );
+}

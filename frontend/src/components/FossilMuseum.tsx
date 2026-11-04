@@ -1,3 +1,4 @@
+import { FossilInspector } from "./FossilPlate";
 import { useEffect, useRef, useState } from "react";
 import "./FossilMuseum.css";
 import FossilReveal from "./FossilReveal";
@@ -27,7 +28,7 @@ export default function FossilMuseum({
     ? Math.max(0, Math.floor(totalMinutes))
     : 0;
   const [query, setQuery] = useState("");
-  const [artStyle, setArtStyle] = useState<ArtStyle>("mascot");
+  const [artStyle, setArtStyle] = useState<ArtStyle>("fossil");
   const [filter, setFilter] = useState<Filter>("All");
   const [selected, setSelected] = useState<FossilDefinition | null>(null);
   const favoriteKey = `dinofocus.museum.favorites.${storageScope}.v1`;
@@ -124,7 +125,9 @@ export default function FossilMuseum({
               value={artStyle}
               onChange={(e) => setArtStyle(e.target.value as ArtStyle)}
             >
-              <option value="mascot">Logo style · Brachiosaurus preview</option>
+              <option value="fossil">
+                Fossil study · Brachiosaurus preview
+              </option>
               <option value="sketch">Field sketches · offline</option>
               <option value="archive">Open collection · online</option>
             </select>
@@ -311,20 +314,25 @@ export default function FossilMuseum({
             <span className="fm-kicker">
               SPECIMEN #{String(FOSSILS.indexOf(selected) + 1).padStart(3, "0")}
             </span>
-            <div className="fm-detail-art" style={{ color: selected.color }}>
-              <FossilReveal
-                key={`${selected.id}-${artStyle}`}
-                id={selected.id}
-                percent={
-                  status(selected) === "Locked" ? 0 : percentage(selected)
-                }
-                style={artStyle}
-                className="fm-art"
-              />
-            </div>
+            {!(selected.id === "brachiosaurus" && artStyle === "fossil") && (
+              <div className="fm-detail-art" style={{ color: selected.color }}>
+                <FossilReveal
+                  key={`${selected.id}-${artStyle}`}
+                  id={selected.id}
+                  percent={
+                    status(selected) === "Locked" ? 0 : percentage(selected)
+                  }
+                  style={artStyle}
+                  className="fm-art"
+                />
+              </div>
+            )}
             <span className="fm-group">{selected.group}</span>
             <h2 id="fm-detail-title">{selected.name}</h2>
             <span className="fm-detail-status">{status(selected)}</span>
+            {selected.id === "brachiosaurus" && artStyle === "fossil" && (
+              <FossilInspector key={selected.id} />
+            )}
             <p>
               Unlocks at{" "}
               <strong>{selected.target} total focused minutes</strong>.

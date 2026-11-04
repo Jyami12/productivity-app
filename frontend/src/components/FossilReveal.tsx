@@ -7,7 +7,7 @@ import type { ArtStyle } from "../data/fossilArtwork";
 export default function FossilReveal({
   id,
   percent,
-  style = "mascot",
+  style = "fossil",
   className = "fm-art",
   centered = false,
 }: {

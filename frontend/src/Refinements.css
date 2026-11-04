@@ -1205,15 +1205,3 @@
   .sidebar .sidebar-note { display: none; }
   .sidebar .profile { margin-top: auto; }
 }
-
-/* Original logo-style collection preview; motion is decorative only. */
-.mascot-specimen { object-fit: contain; }
-@media (prefers-reduced-motion: no-preference) {
-  .fm-card:hover .mascot-specimen, .fm-card:focus-within .mascot-specimen {
-    animation: specimen-welcome 650ms ease-in-out;
-  }
-  @keyframes specimen-welcome {
-    0%, 100% { opacity: 1; }
-    45% { opacity: .78; }
-  }
-}
