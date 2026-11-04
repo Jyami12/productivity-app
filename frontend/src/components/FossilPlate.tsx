@@ -1,3 +1,4 @@
+import CollectionBones from "./CollectionBones";
 import { Bone } from "./FossilBone";
 import VelociraptorBones from "./VelociraptorBones";
 import { useId } from "react";
@@ -35,6 +36,8 @@ export default function FossilPlate({
       >
         {id === "velociraptor" ? (
           <VelociraptorBones />
+        ) : id !== "brachiosaurus" ? (
+          <CollectionBones id={id} />
         ) : (
           <>
             <g data-bones="tail">

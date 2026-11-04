@@ -534,8 +534,7 @@ export function FossilIllustration({
 }) {
   const [failed, setFailed] = useState(false);
   const art = SOURCED_ART[id];
-  if (style === "fossil" && ["brachiosaurus", "velociraptor"].includes(id))
-    return <FossilPlate id={id} className={className} />;
+  if (style === "fossil") return <FossilPlate id={id} className={className} />;
   if (style !== "archive" || !art || failed)
     return <FossilSketch id={id} className={className} centered={centered} />;
   return (

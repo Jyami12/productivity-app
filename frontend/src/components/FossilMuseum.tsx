@@ -263,11 +263,11 @@ export default function FossilMuseum({
       <details className="fm-credits">
         <summary>About the illustrations & artwork credits</summary>
         <p>
-          The field sketches are original decorative SVG illustrations, not
-          scientific reconstructions. The open collection uses the sources
-          below, fitted and tinted with CSS to match this site. Historical
-          drawings may reflect outdated anatomy. The Spinosaurus display
-          adaptation is CC BY-SA 3.0.
+          The fossil studies and field sketches are original decorative SVG
+          illustrations, not scientific reconstructions. The open collection
+          uses the sources below, fitted and tinted with CSS to match this site.
+          Historical drawings may reflect outdated anatomy. The Spinosaurus
+          display adaptation is CC BY-SA 3.0.
         </p>
         <ul>
           {Object.entries(SOURCED_ART).map(([id, art]) => (
