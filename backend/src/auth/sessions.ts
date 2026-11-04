@@ -24,6 +24,8 @@ function readToken(req: Request): string | undefined {
 /** Starts a login session, replacing any session this browser already had. */
 export async function startSession(req: Request, res: Response, userId: string) {
   await endSession(req, res);
+  // Remove this user's expired logins so old rows don't pile up.
+  await prisma.authSession.deleteMany({ where: { userId, expiresAt: { lte: new Date() } } });
   const token = randomBytes(32).toString("base64url");
   await prisma.authSession.create({
     data: {

@@ -1,6 +1,6 @@
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { createApp } from "../src/app.ts";
+import { type AppOptions, createApp } from "../src/app.ts";
 import { prisma } from "../src/db.ts";
 
 if (process.env.DATABASE_SCHEMA !== "test") {
@@ -12,8 +12,11 @@ export { prisma };
 let server: Server;
 let baseUrl: string;
 
-export async function startServer() {
-  server = createApp().listen(0);
+/** High enough that ordinary tests never hit the login and sign-up limits. */
+const TEST_RATE_LIMITS = { login: 10_000, register: 10_000, windowMs: 60_000 };
+
+export async function startServer(options: AppOptions = { authRateLimits: TEST_RATE_LIMITS }) {
+  server = createApp(options).listen(0);
   await new Promise((resolve) => server.once("listening", resolve));
   baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
 }
@@ -25,6 +28,7 @@ export async function stopServer() {
 
 /** Empties the test schema between tests. */
 export async function resetDatabase() {
+  await prisma.focusSession.deleteMany();
   await prisma.authSession.deleteMany();
   await prisma.user.deleteMany();
 }

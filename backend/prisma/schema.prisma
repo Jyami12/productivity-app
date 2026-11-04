@@ -4,8 +4,10 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  // Needed for the "one active focus session per user" index below.
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -21,7 +23,8 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  authSessions AuthSession[]
+  authSessions  AuthSession[]
+  focusSessions FocusSession[]
 }
 
 // One row per logged-in browser. The cookie holds a random token; only its
@@ -35,4 +38,45 @@ model AuthSession {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+enum FocusMode {
+  countdown // runs for plannedSeconds, then may be completed
+  stopwatch // counts up; may be completed after at least 60 seconds
+}
+
+enum FocusSessionStatus {
+  active
+  completed
+  cancelled
+}
+
+// One focus session. Every timestamp is set by the server, and credited time is
+// computed by the server on completion, so the browser cannot fake elapsed time.
+model FocusSession {
+  id              String             @id @default(uuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Free-text label such as "Deep work", trimmed and length-limited by the API.
+  tag             String
+  mode            FocusMode
+  // Countdown length in seconds; null for stopwatch sessions.
+  plannedSeconds  Int?
+  startedAt       DateTime           @default(now())
+  // Set while paused; cleared on resume.
+  pausedAt        DateTime?
+  // Total seconds spent paused across finished pauses, excluded from elapsed time.
+  pausedSeconds   Int                @default(0)
+  // Set when the session is completed or cancelled.
+  endedAt         DateTime?
+  // Seconds credited toward rewards and analytics; 0 unless completed.
+  creditedSeconds Int                @default(0)
+  status          FocusSessionStatus @default(active)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // A user can have at most one active session at a time.
+  @@unique([userId], where: raw("status = 'active'"), map: "FocusSession_one_active_per_user")
+  @@index([userId, status])
+  @@index([userId, endedAt])
 }

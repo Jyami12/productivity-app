@@ -7,7 +7,7 @@ const PASSWORD = "correct-horse";
 const register = (b = browser(), email = "sam@example.com", password = PASSWORD) =>
   b.request("POST", "/api/auth/register", { email, password });
 
-before(startServer);
+before(() => startServer());
 after(stopServer);
 beforeEach(resetDatabase);
 
