@@ -123,14 +123,15 @@ export default function FossilPlate({
                 className="fossil-cavity"
                 d="M451 44L457 38 465 40 463 51 454 53Z M476 40L487 43 493 51 477 54Z"
               />
-              <path d="M449 68L466 65 481 72 500 67 495 77 473 80 453 74Z" />
+              <path
+                data-motion="jaw"
+                style={{ transformOrigin: "449px 68px" }}
+                d="M449 68L466 65 481 72 500 67 495 77 473 80 453 74Z"
+              />
               {[0, 1, 2, 3, 4].map((i) => (
                 <path key={i} d={`M${477 + i * 5} 65l2 6 2 -7`} />
               ))}
-              <path
-                className="fossil-etch"
-                d="M470 32L469 39 M442 55L450 58 M482 75L489 73"
-              />
+              <path className="fossil-etch" d="M470 32L469 39 M442 55L450 58" />
             </g>
           </>
         )}

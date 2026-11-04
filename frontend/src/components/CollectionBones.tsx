@@ -93,6 +93,8 @@ function Skull({
           d={long ? "M42 15L81 24 87 29 43 31Z" : "M41 9L59 16 66 29 42 34Z"}
         />
         <path
+          data-motion="jaw"
+          style={{ transformOrigin: long ? "9px 46px" : "12px 56px" }}
           d={
             long
               ? "M9 46L30 40 52 45 104 42 99 51 47 56 17 54Z"
@@ -102,7 +104,7 @@ function Skull({
         {Array.from({ length: long ? 12 : 7 }, (_, i) => (
           <path key={i} d={`M${35 + i * 5} ${long ? 40 : 47} l2 6 2 -6Z`} />
         ))}
-        <path className="fossil-etch" d="M31 0L34 7 M3 34L11 38 M25 53L31 58" />
+        <path className="fossil-etch" d="M31 0L34 7 M3 34L11 38" />
       </g>
     </g>
   );
@@ -135,15 +137,21 @@ function Theropod({ spino = false }: { spino?: boolean }) {
         })}
       <RibCage x={277} y={147} width={103} depth={83} />
       <path d="M244 138L266 130 286 146 281 173 257 184 239 164Z M266 174L290 222 299 219 283 174Z" />
-      <g opacity=".5">
+      <g
+        opacity=".5"
+        data-motion="step-back"
+        style={{ transformOrigin: "270px 180px" }}
+      >
         <Bone x={270} y={180} length={59} angle={63} width={10} />
         <Bone x={297} y={237} length={53} angle={107} width={6} />
         <Toes x={282} y={295} />
       </g>
-      <Bone x={252} y={181} length={63} angle={118} width={13} />
-      <Bone x={218} y={241} length={57} angle={65} width={8} />
-      <Toes x={244} y={298} />
-      <path d="M226 242L252 285 252 294 246 289 220 246Z" />
+      <g data-motion="step" style={{ transformOrigin: "252px 181px" }}>
+        <Bone x={252} y={181} length={63} angle={118} width={13} />
+        <Bone x={218} y={241} length={57} angle={65} width={8} />
+        <Toes x={244} y={298} />
+        <path d="M226 242L252 285 252 294 246 289 220 246Z" />
+      </g>
       <Bone x={382} y={162} length={spino ? 39 : 25} angle={60} width={5} />
       <Bone
         x={spino ? 404 : 395}
@@ -254,7 +262,11 @@ function Quadruped({ id }: { id: string }) {
             className="fossil-cavity"
             d="M450 193L459 187 468 196 462 207 452 205Z"
           />
-          <path d="M465 230L490 243 513 231 504 247 481 252 466 242Z" />
+          <path
+            data-motion="jaw"
+            style={{ transformOrigin: "465px 230px" }}
+            d="M465 230L490 243 513 231 504 247 481 252 466 242Z"
+          />
           <path
             className="fossil-etch"
             d="M420 143L439 176 M431 132L449 167 M443 137L457 173"
@@ -268,7 +280,11 @@ function Quadruped({ id }: { id: string }) {
             d="M445 130L458 120 471 130 467 146 451 150 441 142Z"
           />
           <path d="M464 178C487 258 548 272 571 214C554 242 513 245 477 174Z M447 184C457 261 516 291 551 253C516 276 474 242 459 181Z" />
-          <path d="M431 187L443 201 468 199 474 185 464 209 444 217 431 207Z" />
+          <path
+            data-motion="jaw"
+            style={{ transformOrigin: "431px 187px" }}
+            d="M431 187L443 201 468 199 474 185 464 209 444 217 431 207Z"
+          />
         </>
       ) : (
         <Skull x={443} y={189} scale={anky ? 0.73 : 0.64} />
@@ -395,7 +411,11 @@ function Plesiosaurus() {
       ].map(([x, y, tx, ty], i) => {
         const angle = (Math.atan2(ty - y, tx - x) * 180) / Math.PI;
         return (
-          <g key={i}>
+          <g
+            key={i}
+            data-motion="paddle"
+            style={{ transformOrigin: `${x}px ${y}px` }}
+          >
             <Bone x={x} y={y} length={39} angle={angle} width={8} />
             {Array.from({ length: 5 }, (_, j) => (
               <g
