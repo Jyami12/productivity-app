@@ -2,6 +2,8 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import {
+  abandonAfterSeconds,
+  isAbandoned,
   cancel,
   complete,
   creditedSeconds,
@@ -167,5 +169,29 @@ describe("creditedSeconds", () => {
   test("is 0 before the session may be completed", () => {
     assert.equal(creditedSeconds(countdown(), at(100)), 0);
     assert.equal(creditedSeconds(stopwatch(), at(59)), 0);
+  });
+});
+
+describe("isAbandoned", () => {
+  const HOUR = 3600;
+
+  test("a countdown is abandoned 2 hours after its planned length", () => {
+    assert.equal(abandonAfterSeconds(countdown()), 1500 + 2 * HOUR);
+    assert.equal(isAbandoned(countdown(), at(1500 + 2 * HOUR)), false);
+    assert.equal(isAbandoned(countdown(), at(1500 + 2 * HOUR + 1)), true);
+  });
+
+  test("a stopwatch is abandoned after 12 hours", () => {
+    assert.equal(isAbandoned(stopwatch(), at(12 * HOUR)), false);
+    assert.equal(isAbandoned(stopwatch(), at(12 * HOUR + 1)), true);
+  });
+
+  test("uses clock time, so a long pause counts", () => {
+    assert.equal(isAbandoned(countdown({ pausedAt: at(10), pausedSeconds: 0 }), at(1500 + 2 * HOUR + 1)), true);
+  });
+
+  test("ended sessions are never abandoned", () => {
+    assert.equal(isAbandoned(countdown({ status: "completed" }), at(30 * 24 * HOUR)), false);
+    assert.equal(isAbandoned(countdown({ status: "cancelled" }), at(30 * 24 * HOUR)), false);
   });
 });

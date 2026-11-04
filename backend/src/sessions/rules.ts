@@ -10,6 +10,8 @@ export const MIN_COUNTDOWN_SECONDS = 60;
 export const MAX_COUNTDOWN_SECONDS = 24 * 60 * 60;
 /** A stopwatch left running is never credited more than this. */
 export const MAX_STOPWATCH_CREDIT_SECONDS = 12 * 60 * 60;
+/** Extra time a countdown gets past its planned length before it counts as abandoned. */
+export const ABANDON_GRACE_SECONDS = 2 * 60 * 60;
 
 /** The fields these rules read. */
 export type SessionTiming = Pick<
@@ -61,6 +63,24 @@ export function creditedSeconds(s: SessionTiming, now: Date) {
   return s.mode === "countdown"
     ? s.plannedSeconds!
     : Math.min(elapsed, MAX_STOPWATCH_CREDIT_SECONDS);
+}
+
+/**
+ * Seconds after the start (clock time, pauses included) at which an active
+ * session counts as abandoned, for example because the tab was closed.
+ */
+export function abandonAfterSeconds(s: SessionTiming) {
+  return s.mode === "countdown"
+    ? (s.plannedSeconds ?? 0) + ABANDON_GRACE_SECONDS
+    : MAX_STOPWATCH_CREDIT_SECONDS;
+}
+
+/** True if this active session has been left too long and should be cancelled. */
+export function isAbandoned(s: SessionTiming, now: Date) {
+  return (
+    s.status === "active" &&
+    seconds(now.getTime() - s.startedAt.getTime()) > abandonAfterSeconds(s)
+  );
 }
 
 export function pause(s: SessionTiming, now: Date): RuleResult {

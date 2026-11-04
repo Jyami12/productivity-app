@@ -10,6 +10,7 @@ import {
   cancel,
   complete,
   elapsedSeconds,
+  isAbandoned,
   MAX_COUNTDOWN_SECONDS,
   MIN_COUNTDOWN_SECONDS,
   pause,
@@ -119,7 +120,29 @@ function transition(
   };
 }
 
+/**
+ * Cancels the user's active session, with no credit, if it was abandoned
+ * (for example the tab was closed). Runs before every session route, so an
+ * abandoned session never blocks starting a new one. If another request
+ * changes the session at the same moment, that request wins.
+ */
+export async function cancelAbandoned(userId: string, now = new Date()) {
+  const active = await prisma.focusSession.findFirst({ where: { userId, status: "active" } });
+  if (!active || !isAbandoned(active, now)) return;
+  const result = cancel(active, now);
+  if (!result.ok) return;
+  await prisma.focusSession.updateMany({
+    where: { id: active.id, userId, updatedAt: active.updatedAt },
+    data: result.changes,
+  });
+}
+
 export const sessionsRouter = Router();
+
+sessionsRouter.use(async (_req, res, next) => {
+  await cancelAbandoned(userId(res));
+  next();
+});
 
 sessionsRouter.post("/", async (req, res) => {
   const parsed = startBody.safeParse(req.body);

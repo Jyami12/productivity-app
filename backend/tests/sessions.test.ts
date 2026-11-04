@@ -6,7 +6,7 @@ import { browser, prisma, resetDatabase, startServer, stopServer } from "./helpe
 
 type Browser = ReturnType<typeof browser>;
 
-before(startServer);
+before(() => startServer());
 after(stopServer);
 beforeEach(resetDatabase);
 
@@ -219,11 +219,13 @@ describe("complete", () => {
     assertAbout(res.body.session.creditedSeconds, 150);
   });
 
-  test("a stopwatch left running is capped at 12 hours", async () => {
+  test("a stopwatch can be completed just under 12 hours", async () => {
     const b = await loggedIn();
     const { id } = (await startStopwatch(b)).body.session;
-    await rewind(id, 3 * 24 * 3600);
-    assert.equal((await act(b, id, "complete")).body.session.creditedSeconds, 12 * 3600);
+    await rewind(id, 12 * 3600 - 30);
+    const res = await act(b, id, "complete");
+    assert.equal(res.status, 200);
+    assertAbout(res.body.session.creditedSeconds, 12 * 3600 - 30);
   });
 
   test("completing twice returns the same result without crediting again", async () => {
@@ -468,5 +470,77 @@ describe("account deletion", () => {
     await startStopwatch(b);
     await prisma.user.deleteMany();
     assert.equal(await prisma.focusSession.count(), 0);
+  });
+});
+
+describe("abandoned sessions", () => {
+  const HOUR = 3600;
+  const row = (id: string) => prisma.focusSession.findUniqueOrThrow({ where: { id } });
+
+  test("a countdown past its planned time + 2 hours is cancelled with no credit", async () => {
+    const b = await loggedIn();
+    const { id } = (await startCountdown(b, 300)).body.session;
+    await rewind(id, 300 + 2 * HOUR + 10);
+
+    assert.equal((await b.request("GET", "/api/sessions/active")).body.session, null);
+    const saved = await row(id);
+    assert.equal(saved.status, "cancelled");
+    assert.equal(saved.creditedSeconds, 0);
+    assert.ok(saved.endedAt);
+  });
+
+  test("a countdown inside the 2-hour grace period can still be completed", async () => {
+    const b = await loggedIn();
+    const { id } = (await startCountdown(b, 300)).body.session;
+    await rewind(id, 300 + 2 * HOUR - 60);
+    const res = await act(b, id, "complete");
+    assert.equal(res.status, 200);
+    assert.equal(res.body.session.creditedSeconds, 300);
+  });
+
+  test("a stopwatch running over 12 hours is cancelled", async () => {
+    const b = await loggedIn();
+    const { id } = (await startStopwatch(b)).body.session;
+    await rewind(id, 12 * HOUR + 10);
+    assertError(await act(b, id, "complete"), 409, "SESSION_NOT_ACTIVE");
+    assert.equal((await row(id)).status, "cancelled");
+  });
+
+  test("an abandoned session no longer blocks starting a new one", async () => {
+    const b = await loggedIn();
+    const { id } = (await startCountdown(b, 300)).body.session;
+    await rewind(id, 3 * 24 * HOUR);
+    const res = await startStopwatch(b);
+    assert.equal(res.status, 201);
+    assert.equal((await row(id)).status, "cancelled");
+  });
+
+  test("time spent paused still counts toward abandonment", async () => {
+    const b = await loggedIn();
+    const { id } = (await startCountdown(b, 300)).body.session;
+    await act(b, id, "pause");
+    await rewind(id, 300 + 2 * HOUR + 10); // paused the whole time
+    assertError(await act(b, id, "resume"), 409, "SESSION_NOT_ACTIVE");
+    assert.equal((await row(id)).status, "cancelled");
+  });
+
+  test("abandoned sessions show up as cancelled in history", async () => {
+    const b = await loggedIn();
+    const { id } = (await startStopwatch(b)).body.session;
+    await rewind(id, 13 * HOUR);
+    const res = await b.request("GET", "/api/sessions?status=cancelled");
+    assert.deepEqual(res.body.sessions.map((s: any) => s.id), [id]);
+    assert.deepEqual((await b.request("GET", "/api/sessions")).body.sessions, []);
+  });
+
+  test("one user's requests never touch another user's sessions", async () => {
+    const owner = await loggedIn();
+    const other = await loggedIn();
+    const { id } = (await startStopwatch(owner)).body.session;
+    await rewind(id, 13 * HOUR);
+    await other.request("GET", "/api/sessions/active");
+    assert.equal((await row(id)).status, "active");
+    await owner.request("GET", "/api/sessions/active");
+    assert.equal((await row(id)).status, "cancelled");
   });
 });

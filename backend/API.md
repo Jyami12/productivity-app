@@ -93,6 +93,11 @@ interface FocusSession {
 - Paused time never counts. Complete and cancel are both allowed while paused.
 - A user can have **only one active session at a time.**
 - Cancelling credits nothing.
+- **Abandoned sessions are cancelled automatically**, with no credit, the next time that user calls any session route. A session counts as abandoned when, counting clock time from `startedAt` including pauses:
+  - a countdown is still active 2 hours after its planned length (`plannedSeconds + 7200`)
+  - a stopwatch is still active after 12 hours
+
+  So a user who closed the tab is never stuck: on their next visit `GET /api/sessions/active` returns `null`, and the old session appears in history with `status=cancelled`.
 
 ### Routes
 
