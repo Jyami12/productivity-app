@@ -23,3 +23,171 @@
   stroke-width: 1;
   opacity: 0.16;
 }
+
+/* Short greetings, only on deliberate hover, keyboard focus, or opening details.
+   Both reveal layers move together so partial excavation stays aligned. */
+.fossil-plate {
+  --specimen-greeting: fossil-stomp;
+  --specimen-duration: 380ms;
+  --specimen-repeats: 3;
+}
+.fossil-plate[data-species="velociraptor"] {
+  --specimen-greeting: fossil-dash;
+  --specimen-duration: 230ms;
+  --specimen-repeats: 5;
+}
+.fossil-plate[data-species="pteranodon"] {
+  --specimen-greeting: fossil-flight;
+  --specimen-duration: 600ms;
+  --specimen-repeats: 2;
+}
+.fossil-plate[data-species="plesiosaurus"],
+.fossil-plate[data-species="ammonite"] {
+  --specimen-greeting: fossil-swim;
+  --specimen-duration: 750ms;
+  --specimen-repeats: 2;
+}
+.fossil-plate[data-species="trilobite"] {
+  --specimen-greeting: fossil-scuttle;
+  --specimen-duration: 220ms;
+  --specimen-repeats: 5;
+}
+.fossil-bones {
+  transform-box: fill-box;
+  transform-origin: 50% 85%;
+}
+.fossil-bones [data-bones="skull"] {
+  transform-box: fill-box;
+  transform-origin: 15% 80%;
+}
+.fossil-bones [data-bones="limbs"] {
+  transform-box: fill-box;
+  transform-origin: 50% 10%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fm-open:hover .fossil-bones,
+  .fm-open:focus-visible .fossil-bones,
+  .fm-detail-art .fossil-bones {
+    animation: var(--specimen-greeting) var(--specimen-duration) ease-in-out
+      var(--specimen-repeats);
+  }
+  .fm-open:hover [data-bones="skull"],
+  .fm-open:focus-visible [data-bones="skull"],
+  .fm-detail-art [data-bones="skull"] {
+    animation: fossil-roar 1100ms ease-in-out 1;
+  }
+  .fm-open:hover [data-bones="limbs"],
+  .fm-open:focus-visible [data-bones="limbs"],
+  .fm-detail-art [data-bones="limbs"] {
+    animation: fossil-stride 300ms ease-in-out 4;
+  }
+}
+@keyframes fossil-dash {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  25% {
+    transform: translate(3px, -4px) rotate(-2deg);
+  }
+  65% {
+    transform: translate(-2px, 1px) rotate(1deg);
+  }
+}
+@keyframes fossil-stomp {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  35% {
+    transform: translateY(-4px) rotate(-1.5deg);
+  }
+  65% {
+    transform: translateY(2px) rotate(1deg);
+  }
+}
+@keyframes fossil-flight {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  45% {
+    transform: translateY(-9px) scaleY(0.92);
+  }
+  75% {
+    transform: translateY(-4px) scaleY(1.02);
+  }
+}
+@keyframes fossil-swim {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  30% {
+    transform: translate(5px, -4px) rotate(-2deg);
+  }
+  70% {
+    transform: translate(-4px, 2px) rotate(2deg);
+  }
+}
+@keyframes fossil-scuttle {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(3px) rotate(1.5deg);
+  }
+  75% {
+    transform: translateX(-3px) rotate(-1.5deg);
+  }
+}
+@keyframes fossil-roar {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  35%,
+  60% {
+    transform: rotate(-7deg);
+  }
+  80% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes fossil-stride {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30% {
+    transform: rotate(4deg);
+  }
+  70% {
+    transform: rotate(-4deg);
+  }
+}
+
+.fossil-bones [data-bones="wing"] {
+  transform-box: fill-box;
+  transform-origin: 0% 85%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fm-open:hover [data-bones="wing"],
+  .fm-open:focus-visible [data-bones="wing"],
+  .fm-detail-art [data-bones="wing"] {
+    animation: fossil-wingbeat 600ms ease-in-out 2;
+  }
+}
+@keyframes fossil-wingbeat {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(-7deg);
+  }
+  70% {
+    transform: rotate(5deg);
+  }
+}

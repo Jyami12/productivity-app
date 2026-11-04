@@ -15,6 +15,7 @@ export default function FossilPlate({
   return (
     <svg
       className={`fossil-plate ${className}`}
+      data-species={id}
       viewBox="0 0 640 360"
       aria-hidden="true"
       focusable="false"

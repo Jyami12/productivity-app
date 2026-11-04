@@ -195,6 +195,7 @@ export default function FossilMuseum({
                 type="button"
                 onClick={() => setSelected(f)}
                 aria-label={`View ${f.name}, ${state}`}
+                title={`Meet ${f.name}`}
               >
                 <span className="fm-number">
                   #{String(index).padStart(3, "0")}

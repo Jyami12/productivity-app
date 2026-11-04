@@ -76,32 +76,34 @@ function Skull({
 }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${scale})`}>
-      <path
-        d={
-          long
-            ? "M0 14L9 1 29 -2 43 8 100 19 109 28 103 38 43 39 22 34 5 43 -3 30Z"
-            : "M0 14L8 0 35 -6 62 5 77 22 74 43 49 48 28 42 9 52 -4 32Z"
-        }
-      />
-      <path
-        className="fossil-cavity"
-        d="M8 15L17 6 27 8 31 20 24 30 12 29 7 22Z"
-      />
-      <path
-        className="fossil-cavity"
-        d={long ? "M42 15L81 24 87 29 43 31Z" : "M41 9L59 16 66 29 42 34Z"}
-      />
-      <path
-        d={
-          long
-            ? "M9 46L30 40 52 45 104 42 99 51 47 56 17 54Z"
-            : "M12 56L31 48 52 54 72 49 66 61 35 66 16 63Z"
-        }
-      />
-      {Array.from({ length: long ? 12 : 7 }, (_, i) => (
-        <path key={i} d={`M${35 + i * 5} ${long ? 40 : 47} l2 6 2 -6Z`} />
-      ))}
-      <path className="fossil-etch" d="M31 0L34 7 M3 34L11 38 M25 53L31 58" />
+      <g data-bones="skull">
+        <path
+          d={
+            long
+              ? "M0 14L9 1 29 -2 43 8 100 19 109 28 103 38 43 39 22 34 5 43 -3 30Z"
+              : "M0 14L8 0 35 -6 62 5 77 22 74 43 49 48 28 42 9 52 -4 32Z"
+          }
+        />
+        <path
+          className="fossil-cavity"
+          d="M8 15L17 6 27 8 31 20 24 30 12 29 7 22Z"
+        />
+        <path
+          className="fossil-cavity"
+          d={long ? "M42 15L81 24 87 29 43 31Z" : "M41 9L59 16 66 29 42 34Z"}
+        />
+        <path
+          d={
+            long
+              ? "M9 46L30 40 52 45 104 42 99 51 47 56 17 54Z"
+              : "M12 56L31 48 52 54 72 49 66 61 35 66 16 63Z"
+          }
+        />
+        {Array.from({ length: long ? 12 : 7 }, (_, i) => (
+          <path key={i} d={`M${35 + i * 5} ${long ? 40 : 47} l2 6 2 -6Z`} />
+        ))}
+        <path className="fossil-etch" d="M31 0L34 7 M3 34L11 38 M25 53L31 58" />
+      </g>
     </g>
   );
 }
@@ -352,11 +354,13 @@ function Pteranodon() {
       />
       {[-1, 1].map((side) => (
         <g key={side} transform={`translate(320 171) scale(${side} 1)`}>
-          <Bone x={9} y={0} length={70} angle={-30} width={7} />
-          <Bone x={74} y={-38} length={62} angle={-18} width={5} />
-          <Bone x={138} y={-59} length={77} angle={14} width={4} />
-          <Bone x={217} y={-40} length={63} angle={26} width={2.5} />
-          <path d="M128 -60L133 -76 139 -79 138 -71 135 -58Z M133 -56L146 -68 152 -68 145 -60 137 -52Z" />
+          <g data-bones="wing">
+            <Bone x={9} y={0} length={70} angle={-30} width={7} />
+            <Bone x={74} y={-38} length={62} angle={-18} width={5} />
+            <Bone x={138} y={-59} length={77} angle={14} width={4} />
+            <Bone x={217} y={-40} length={63} angle={26} width={2.5} />
+            <path d="M128 -60L133 -76 139 -79 138 -71 135 -58Z M133 -56L146 -68 152 -68 145 -60 137 -52Z" />
+          </g>
           <Bone x={7} y={73} length={40} angle={52} width={5} />
           <Bone x={35} y={108} length={39} angle={96} width={3} />
           <Toes x={27} y={152} />
