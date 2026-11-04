@@ -25,6 +25,7 @@ export async function stopServer() {
 
 /** Empties the test schema between tests. */
 export async function resetDatabase() {
+  await prisma.focusSession.deleteMany();
   await prisma.authSession.deleteMany();
   await prisma.user.deleteMany();
 }
