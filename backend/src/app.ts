@@ -6,6 +6,7 @@ import { DEFAULT_AUTH_RATE_LIMITS, type AuthRateLimits } from "./auth/rateLimit.
 import { createAuthRouter } from "./auth/routes.js";
 import { prisma } from "./db.js";
 import { sessionsRouter } from "./sessions/routes.js";
+import { tagsRouter } from "./tags/routes.js";
 
 export interface AppOptions {
   authRateLimits?: AuthRateLimits;
@@ -36,6 +37,7 @@ export function createApp(options: AppOptions = {}) {
 
   app.use("/api/auth", createAuthRouter(options.authRateLimits ?? DEFAULT_AUTH_RATE_LIMITS));
   app.use("/api/sessions", requireAuth, sessionsRouter);
+  app.use("/api/tags", requireAuth, tagsRouter);
 
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found." } });

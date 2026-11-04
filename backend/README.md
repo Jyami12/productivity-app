@@ -1,6 +1,6 @@
 # DinoFocus backend
 
-Express + TypeScript API with PostgreSQL (Neon) via Prisma. Currently provides user accounts: register, log in, log out, and the current user.
+Express + TypeScript API with PostgreSQL (Neon) via Prisma. Provides accounts, account-owned focus sessions and history, and custom tags.
 
 ## Setup
 
@@ -35,6 +35,25 @@ Run the frontend at the same time (`cd frontend && npm run dev`). Vite forwards 
 | `npm run db:studio` | Browse the database in Prisma Studio |
 
 ## API
+
+### Presentation account
+
+`node --env-file-if-exists=.env --import tsx scripts/create-demo-account.ts` creates
+`demo@dinofocus.example` with 12 fictional completed sessions totaling 149 minutes,
+three custom tags, and a generated password printed once. It refuses to modify an
+existing account. This is an explicit presentation fixture, not a public way to
+award time. Describe the preloaded history as fictional during the demo.
+
+Sign in through the ordinary frontend URL. Five fossils start collected; completing
+a real one-minute countdown reaches 150 minutes and unlocks Tyrannosaurus rex.
+Rehearsal sessions change this account's totals, so reserve that last minute for
+the presentation. The script is separate from normal app startup and migrations.
+
+Custom tags are saved per account. Apply the latest migrations with `npx prisma migrate deploy`
+before using **Create tag** in the focus workspace. The four preset tags remain available;
+new names are trimmed, limited to 40 characters, and deduplicated ignoring case per account.
+Custom tag creation is available in the signed-in workspace, not the no-login sample. Session APIs still accept tag names,
+so this is compatible with the account-history integration.
 
 See [API.md](API.md) for every route (auth and focus sessions), request and response shapes, error codes, and how to call them from the frontend.
 

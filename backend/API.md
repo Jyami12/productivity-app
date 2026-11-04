@@ -230,3 +230,11 @@ npm run db:migrate   # once, to create the FocusSession table in your database
 npm run dev          # API on http://localhost:3000
 ```
 Then run `npm run dev` in `frontend`. Use `GET /api/health` to check that the backend and database are up.
+
+## Account tags
+
+Authenticated `GET /api/tags` returns `{ tags: [{ id, name }] }` for the current account.
+Authenticated `POST /api/tags` accepts `{ name }` (trimmed, 1–40 characters) and returns
+`{ tag: { id, name } }` with status 201. Names are unique per account ignoring case;
+repeated creation returns the existing tag. The owner comes from the login cookie.
+Focus sessions continue to accept the tag name as their `tag` field.

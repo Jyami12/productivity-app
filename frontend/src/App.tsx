@@ -9,7 +9,7 @@ import {
   type ActiveSession,
 } from "./data/demoStore";
 import FossilMuseum from "./components/FossilMuseum";
-import FossilSketch from "./components/FossilSketch";
+import FossilPlate from "./components/FossilPlate";
 import FossilReveal from "./components/FossilReveal";
 import "./App.css";
 import AccountButton from "./auth/AccountButton";
@@ -19,15 +19,28 @@ import { FOSSILS, type FossilDefinition } from "./data/fossils";
 import { dateKey, formatDuration } from "./data/timeAnalytics";
 import "./Refinements.css";
 import TimerAppearance from "./components/TimerAppearance";
-const pages = ["Focus", "Dashboard", "Museum", "History", "Groups"] as const;
+import TagPicker from "./components/TagPicker";
+import { ApiError } from "./api/client";
+import { sessionsApi, toActive, toHistory } from "./api/sessions";
+import { useAuth } from "./auth/AuthContext";
+const pages = ["Focus", "Dashboard", "Museum", "History"] as const;
 const tags = ["Deep work", "Studying", "Reading", "Creative work"];
 function App() {
+  const auth = useAuth();
+  const accountId = auth?.user.id;
+  const refreshAuth = auth?.refresh;
+  const storageScope = isSampleWorkspace ? "sample" : `account:${auth?.user.id}`;
+  const [loading, setLoading] = useState(!isSampleWorkspace);
+  const [loadError, setLoadError] = useState("");
+  const [reload, setReload] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const pending = useRef(false);
   const [page, setPage] = useState<(typeof pages)[number]>(
     isSampleWorkspace ? "Dashboard" : "Focus",
   );
-  const [sessions, setSessions] = useState<Session[]>(demoStore.getSessions);
+  const [sessions, setSessions] = useState<Session[]>(() => isSampleWorkspace ? demoStore.getSessions() : []);
   const [active, setActive] = useState<ActiveSession | null>(
-    demoStore.getActive,
+    () => isSampleWorkspace ? demoStore.getActive() : null,
   );
   const [mode, setMode] = useState<"countdown" | "stopwatch">("countdown");
   const [duration, setDuration] = useState(25),
@@ -47,6 +60,44 @@ function App() {
   } | null>(null);
   const receiptDialog = useRef<HTMLDialogElement>(null);
   const activityDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (isSampleWorkspace) return;
+    let cancelled = false;
+    Promise.all([sessionsApi.history(), sessionsApi.active()]).then(([history, running]) => {
+      if (cancelled) return;
+      setSessions(history);
+      setActive(running ? toActive(running) : null);
+      setNow(Date.now());
+      setLoading(false);
+      setLoadError("");
+    }).catch(error => {
+      if (cancelled) return;
+      setLoadError(error instanceof Error ? error.message : "Couldn't load your sessions.");
+      setLoading(false);
+      if (error instanceof ApiError && error.status === 401) refreshAuth?.();
+    });
+    return () => { cancelled = true; };
+  }, [reload, refreshAuth, accountId]);
+
+  async function perform(action: () => Promise<void>) {
+    if (pending.current || loading || loadError) return;
+    pending.current = true;
+    setBusy(true);
+    try { await action(); }
+    catch (error) {
+      setNotice(error instanceof Error ? error.message : "Couldn't save your changes. Try again.");
+      if (error instanceof ApiError && error.status === 401) auth?.refresh();
+      // Reconcile ambiguous network failures and changes made on another device.
+      if (!isSampleWorkspace) {
+        try {
+          const [history, running] = await Promise.all([sessionsApi.history(), sessionsApi.active()]);
+          setSessions(history);
+          setActive(running ? toActive(running) : null);
+          setNow(Date.now());
+        } catch { /* Keep current state so the action can be retried. */ }
+      }
+    } finally { pending.current = false; setBusy(false); }
+  }
   useEffect(() => {
     if (receipt && receiptDialog.current && !receiptDialog.current.open)
       receiptDialog.current.showModal();
@@ -92,6 +143,15 @@ function App() {
   const paused = active?.pausedAt !== undefined;
   function togglePause() {
     if (!active) return;
+    if (!isSampleWorkspace) {
+      void perform(async () => {
+        const updated = await sessionsApi.transition(active.id!, active.pausedAt === undefined ? "pause" : "resume");
+        setActive(toActive(updated));
+        setNow(Date.now());
+        setNotice(updated.pausedAt ? "Session paused. Take your time." : "Session resumed. Welcome back.");
+      });
+      return;
+    }
     const timestamp = Date.now();
     const next = toggleSessionPause(active, timestamp);
     demoStore.setActive(next);
@@ -105,6 +165,15 @@ function App() {
   }
   function start() {
     if (mode === "countdown" && !durationValid) return;
+    if (!isSampleWorkspace) {
+      void perform(async () => {
+        const running = await sessionsApi.start(mode, tag, duration);
+        setActive(toActive(running));
+        setNow(Date.now());
+        setNotice(`${running.tag} session started.`);
+      });
+      return;
+    }
     const next = { startedAt: Date.now(), mode, duration, tag };
     demoStore.setActive(next);
     setActive(next);
@@ -113,6 +182,23 @@ function App() {
   }
   function finish(cancel = false) {
     if (!active || (!cancel && !ready)) return;
+    if (!isSampleWorkspace) {
+      void perform(async () => {
+        const result = await sessionsApi.transition(active.id!, cancel ? "cancel" : "complete");
+        if (!cancel) {
+          const saved = toHistory(result);
+          const completed = [saved, ...sessions.filter(s => s.id !== saved.id)];
+          setSessions(completed);
+          if (!sessions.some(s => s.id === saved.id)) {
+            const newTotal = completed.reduce((sum, s) => sum + s.seconds / 60, 0);
+            setReceipt({ seconds: saved.seconds, tag: saved.tag, unlocked: FOSSILS.filter(f => f.target > total && f.target <= newTotal) });
+          }
+        }
+        setActive(null);
+        setNotice(cancel ? "Session cancelled. No time or fossil progress added." : "Session saved to your account history.");
+      });
+      return;
+    }
     if (!cancel) {
       const completed = demoStore.complete(active, Date.now());
       const saved = completed.find((s) => s.id === String(active.startedAt));
@@ -234,6 +320,13 @@ function App() {
       </div>
     </section>
   );
+  if (loading || loadError) return <main className="auth-page"><section className="card auth-card">
+    <AccountButton variant="topbar" />
+    {loading ? <p role="status">Loading your focus sessions…</p> : <>
+      <p role="alert">{loadError}</p>
+      <button className="primary" onClick={() => { setLoading(true); setLoadError(""); setReload(r => r + 1); }}>Try again</button>
+    </>}
+  </section></main>;
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -262,9 +355,8 @@ function App() {
               aria-current={page === p ? "page" : undefined}
               onClick={() => setPage(p)}
             >
-              <span>{["◷", "▥", "◇", "≡", "◎"][i]}</span>
+              <span>{["◷", "▥", "◇", "≡"][i]}</span>
               <span className="nav-name">{p}</span>
-              {p === "Groups" && <small>Soon</small>}
             </button>
           ))}
         </nav>
@@ -499,19 +591,7 @@ function App() {
                     </div>
                   )}
                   <div className="session-options">
-                    <label>
-                      Working on
-                      <select
-                        aria-label="Working on"
-                        value={active?.tag ?? tag}
-                        disabled={!!active}
-                        onChange={(e) => setTag(e.target.value)}
-                      >
-                        {tags.map((t) => (
-                          <option key={t}>{t}</option>
-                        ))}
-                      </select>
-                    </label>
+                    <TagPicker value={active?.tag ?? tag} disabled={!!active} onChange={setTag} />
                     <label>
                       Duration (minutes)
                       <input
@@ -551,7 +631,7 @@ function App() {
                     <button
                       className="primary start"
                       onClick={start}
-                      disabled={mode === "countdown" && !durationValid}
+                      disabled={busy || (mode === "countdown" && !durationValid)}
                     >
                       ▶ <span>Start focusing</span>
                       <span>→</span>
@@ -560,6 +640,7 @@ function App() {
                     <div className="active-actions">
                       <button
                         className="primary"
+                        disabled={busy}
                         onClick={ready ? () => finish() : togglePause}
                       >
                         {ready
@@ -569,12 +650,13 @@ function App() {
                             : "Pause timer"}
                       </button>
                       {ready && active.mode === "stopwatch" && (
-                        <button className="text-button" onClick={togglePause}>
+                        <button className="text-button" disabled={busy} onClick={togglePause}>
                           {paused ? "Resume timer" : "Pause timer"}
                         </button>
                       )}
                       <button
                         className="text-button"
+                        disabled={busy}
                         onClick={() => finish(true)}
                       >
                         Cancel session
@@ -641,19 +723,14 @@ function App() {
             <TimeAnalytics
               sessions={sessions}
               now={now}
-              storageScope={isSampleWorkspace ? "sample" : "default"}
+              storageScope={storageScope}
               onStartFocus={() => setPage("Focus")}
             />
           )}
           {page === "Museum" && (
             <FossilMuseum
               totalMinutes={total}
-              storageScope={
-                new URLSearchParams(window.location.search).get("demo") ===
-                "sample"
-                  ? "sample"
-                  : "default"
-              }
+              storageScope={storageScope}
               onFocus={() => setPage("Focus")}
             />
           )}
@@ -666,31 +743,12 @@ function App() {
               {list}
             </section>
           )}
-          {page === "Groups" && (
-            <section className="card group-preview">
-              <span className="eyebrow">ON THE EXPEDITION MAP</span>
-              <div className="group-icon">◎</div>
-              <h2>Better, together.</h2>
-              <p>
-                Invite-only groups will let your crew work toward a weekly focus
-                goal while keeping personal session details private.
-              </p>
-              <div className="group-features">
-                <span>01 · Invite your crew</span>
-                <span>02 · Set a weekly goal</span>
-                <span>03 · Grow together</span>
-              </div>
-              <span className="pill">
-                PLANNED · BACKEND CONNECTION REQUIRED
-              </span>
-            </section>
-          )}
           <p className="notice" role="status">
-            {notice}
+            {busy ? "Saving your session…" : notice}
           </p>
           <footer>
             <span>Made for meaningful minutes.</span>
-            <span>Demo data stays in this browser · No account required</span>
+            <span>{isSampleWorkspace ? "Demo data stays in this browser · No account required" : "Focus sessions and tags saved to your account"}</span>
           </footer>
         </div>
       </main>
@@ -718,7 +776,7 @@ function App() {
                 </strong>
                 {receipt.unlocked.map((f) => (
                   <div key={f.id}>
-                    <FossilSketch id={f.id} />
+                    <FossilPlate id={f.id} />
                     <span>{f.name}</span>
                   </div>
                 ))}

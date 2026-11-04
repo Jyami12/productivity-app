@@ -31,6 +31,13 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   :is(.fm-open:hover, .fm-open:focus-visible, .fm-detail-art)
+    [data-motion="trilobite-segment"] {
+    animation-name: fossil-trilobite-ripple;
+    animation-duration: 1100ms;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 2;
+  }
+  :is(.fm-open:hover, .fm-open:focus-visible, .fm-detail-art)
     .fossil-plate[data-species="ammonite"]
     .fossil-bones {
     transform-box: view-box;
@@ -72,6 +79,11 @@
   75% {
     transform: rotate(9deg);
   }
+}
+@keyframes fossil-trilobite-ripple {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  35% { transform: translateY(-4px) scaleX(.88); }
+  65% { transform: translateY(2px) scaleX(1.04); }
 }
 @keyframes fossil-step {
   0%,

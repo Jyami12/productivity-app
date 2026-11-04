@@ -1,12 +1,20 @@
 # DinoFocus
 
-> **M2 frontend prototype:** See [frontend setup and demo guide](frontend/README.md). Run with Node.js 22.18+ using `cd frontend`, `npm ci`, and `npm run dev`. Backend decisions remain open.  
+> **Current app:** See [frontend setup and demo guide](frontend/README.md) and [backend setup](backend/README.md). Signed-in focus sessions, history, and custom tags use the PostgreSQL backend. Dashboard and fossil progress derive from saved completed sessions. Start both services for the account workspace. The M1 proposal below records the original plan.
 >
 > **M2 Google Slides Presentation:** [View the presentation](https://docs.google.com/presentation/d/17L2GNyLpSZcMxiYsAS0L3EEwgHxMsKHtzlHXeILIKUI/edit?usp=sharing)
 >
 > When running locally, open the address printed by Vite with `/?demo=sample` to view UI with hypothetical data.
 
-M1 — Proposal and Requirements | CSE 416 | Fall 2026
+## Current scope decision
+
+Groups, invitations, membership management, and shared weekly goals have been cut
+from the semester release. DinoFocus now focuses on the individual focus → history
+→ analytics → fossil/museum workflow. See [M4 scope and trade-off](docs/M4-scope.md).
+This decision supersedes the group-related commitments in the historical M1
+proposal below and the M2 design; they are not pending implementation promises.
+
+M1 — Historical Proposal and Requirements | CSE 416 | Fall 2026
 
 # **1\. Problem and users**
 

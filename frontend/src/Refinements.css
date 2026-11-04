@@ -480,12 +480,6 @@
     border-radius: 8px;
     border-left: 3px solid #8b9f64;
   }
-  .fm-art-controls {
-    gap: 14px;
-  }
-  .fm-art-controls p {
-    max-width: 500px;
-  }
   /* Completion feedback is tied only to a saved session. */
   .session-receipt {
     width: min(440px, calc(100vw - 32px));
@@ -1082,10 +1076,6 @@
 .museum-content .fm-search > span { margin-bottom: 4px; font-size: 10px; }
 .museum-content .fm-search input { padding: 8px 10px; font-size: 12px; border-radius: 6px; }
 .museum-content .fm-total { padding: 0; font-size: 10px; white-space: normal; max-width: 95px; }
-.museum-content .fm-art-controls { order: 2; margin: 0; display: block; }
-.museum-content .fm-art-controls label { gap: 4px; font-size: 10px; }
-.museum-content .fm-art-controls select { padding: 8px 10px; font-size: 11px; }
-.museum-content .fm-art-controls p { max-width: 230px; margin: 5px 0 0; font-size: 10px; }
 .museum-content .fm-filters { gap: 6px; margin-bottom: 12px; }
 .museum-content .fm-filters button { padding: 6px 12px; min-height: 32px; font-size: 11px; }
 .museum-content .fm-next { padding: 10px 14px; gap: 12px; }
@@ -1102,7 +1092,6 @@
 .museum-content .fm-status { margin-top: 9px; font-size: 9px; }
 .museum-content .fm-open progress, .museum-content .fm-locked-line { margin-top: 6px; }
 .museum-content .fm-star { width: 32px; height: 32px; font-size: 20px; top: 2px; right: 2px; }
-.museum-content .fm-credits { margin-top: 12px; padding-top: 10px; font-size: 10px; }
 @media (max-width: 1200px) {
   .museum-content .fm-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .museum-content .fm-toolbar { grid-template-columns: minmax(180px, 1fr) auto; gap: 12px; }
@@ -1112,8 +1101,6 @@
   .museum-content .fm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .museum-content .fm-toolbar { grid-template-columns: 1fr; }
   .museum-content .fm-tools { display: flex; }
-  .museum-content .fm-art-controls label { width: auto; }
-  .museum-content .fm-art-controls select { width: 100%; }
   .museum-content .fm-next { align-items: flex-start; flex-direction: column; gap: 4px; }
 }
 @media (max-width: 500px) {

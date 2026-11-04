@@ -1,20 +1,17 @@
 import { useLayoutEffect, useRef } from "react";
-import { FossilIllustration } from "./FossilSketch";
-import type { ArtStyle } from "../data/fossilArtwork";
+import FossilPlate from "./FossilPlate";
 
 // A light outline previews the specimen; colored ink reveals saved progress.
 // The surrounding UI supplies the accessible name and percentage.
 export default function FossilReveal({
   id,
   percent,
-  style = "fossil",
   className = "fm-art",
   centered = false,
   animateReveal = false,
 }: {
   id: string;
   percent: number;
-  style?: ArtStyle;
   className?: string;
   centered?: boolean;
   animateReveal?: boolean;
@@ -24,7 +21,7 @@ export default function FossilReveal({
     : 0;
   const ink = useRef<HTMLSpanElement>(null);
   const brush = useRef<HTMLSpanElement>(null);
-  const previous = useRef<{ id: string; style: string; count: number } | null>(
+  const previous = useRef<{ id: string; count: number } | null>(
     null,
   );
   useLayoutEffect(() => {
@@ -62,7 +59,6 @@ export default function FossilReveal({
         if (
           animateReveal &&
           last?.id === id &&
-          last.style === style &&
           count > last.count &&
           brush.current &&
           !window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -97,9 +93,9 @@ export default function FossilReveal({
             { duration: 800, easing: "ease-out" },
           );
         }
-        previous.current = { id, style, count };
+        previous.current = { id, count };
       } else {
-        // Archive raster images retain the existing progressive reveal.
+        // Use a simple reveal until SVG geometry is available.
         layer.style.clipPath = `inset(0 ${100 - value}% 0 0)`;
       }
     };
@@ -112,15 +108,13 @@ export default function FossilReveal({
       size.disconnect();
       changes.disconnect();
     };
-  }, [id, style, value, centered, animateReveal]);
+  }, [id, value, centered, animateReveal]);
   return (
     <span className="fossil-reveal" data-reveal={value} aria-hidden="true">
       <span className="fossil-reveal-outline">
-        <FossilIllustration
+        <FossilPlate
           id={id}
-          style={style}
           className={className}
-          centered={centered}
         />
       </span>
       <span
@@ -128,11 +122,9 @@ export default function FossilReveal({
         className="fossil-reveal-ink"
         style={{ clipPath: `inset(0 ${100 - value}% 0 0)` }}
       >
-        <FossilIllustration
+        <FossilPlate
           id={id}
-          style={style}
           className={className}
-          centered={centered}
         />
       </span>
       <span className="excavation-brush" ref={brush}>

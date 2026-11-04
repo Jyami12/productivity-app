@@ -27,7 +27,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(
+export async function request<T>(
   method: string,
   path: string,
   body?: unknown,
@@ -76,6 +76,8 @@ async function request<T>(
 }
 
 export const api = {
+  tags: () => request<{ tags: { id: string; name: string }[] }>("GET", "/tags").then(r => r.tags),
+  createTag: (name: string) => request<{ tag: { id: string; name: string } }>("POST", "/tags", { name }).then(r => r.tag),
   health: () => request<{ ok: boolean; database: string }>("GET", "/health"),
 
   register: (email: string, password: string) =>

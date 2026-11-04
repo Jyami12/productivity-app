@@ -4,6 +4,7 @@ import type { User } from "../api/client.ts";
 export interface AuthValue {
   user: User;
   logout: () => Promise<void>;
+  refresh: () => void;
 }
 
 export const AuthContext = createContext<AuthValue | null>(null);

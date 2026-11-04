@@ -331,7 +331,11 @@ function Trilobite() {
         const y = 111 + i * 11,
           w = 78 - i * 2.1;
         return (
-          <g key={i}>
+          <g
+            key={i}
+            data-motion="trilobite-segment"
+            style={{ transformOrigin: `320px ${y + 5}px`, animationDelay: `${i * 40}ms` }}
+          >
             <path
               d={`M303 ${y}L${320 - w} ${y + 3} ${310 - w} ${y + 13} ${320 - w} ${y + 10} 303 ${y + 8}Z M337 ${y}L${320 + w} ${y + 3} ${330 + w} ${y + 13} ${320 + w} ${y + 10} 337 ${y + 8}Z`}
             />

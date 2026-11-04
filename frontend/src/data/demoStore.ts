@@ -12,6 +12,7 @@ export interface Session {
   completedAt: number;
 }
 export interface ActiveSession {
+  id?: string;
   startedAt: number;
   mode: Session["mode"];
   duration: number;

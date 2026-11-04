@@ -1,10 +1,10 @@
 # DinoFocus frontend
 
-Frontend-only M2 prototype. Backend, authentication, database, and API services remain planned. See [M2 design](../docs/M2-design.md) for the proposed architecture.
+React + TypeScript with Vite. Use Node.js 22.18+ (Node 24 recommended).
 
 ## Run locally
 
-Use Node.js 22.18+ (Node 24 LTS recommended). From this repository:
+Start the backend first using [its setup guide](../backend/README.md), then:
 
 ```sh
 cd frontend
@@ -12,44 +12,48 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. No environment variables or backend services are needed.
+Vite forwards `/api` requests to the backend on port 3000. The ordinary URL requires
+an account and a working backend/database. Sign in, then start a tagged countdown
+or stopwatch session. Custom tags are saved to your account.
+
+## Account-backed sessions and history
+
+Starting, pausing, resuming, completing, and cancelling sessions use the authenticated
+session API. Reloading restores the account's active session. Timing and credited
+seconds are validated by the server; the timer display advances from the elapsed
+time returned by the server. Failed requests show a message and reconcile state
+with the backend when possible. Expired logins return to authentication.
+
+History loads all completed-session pages. Dashboard totals, trends, tag breakdowns,
+streaks, and fossil progress derive from those saved records. Account history works
+across browsers and devices. Museum and analytics display preferences are scoped
+by account in browser storage. Groups, invitations, and shared goals have been cut
+from the semester scope; see [the M4 scope decision](../docs/M4-scope.md).
+
+Old browser-local history is not uploaded or attributed to an account. Signed-in
+sessions never fall back to browser-local storage if the API fails.
+
+## Sample demo
+
+Append `/?demo=sample` for a separate no-login sample workspace with fictional
+history. Only this workspace uses `demoStore` and browser-local timer/history data.
+Reset sample data affects only the sample workspace. Custom tag creation requires
+the ordinary signed-in workspace.
+
+For a short demo, choose a one-minute countdown, start, reload to show recovery,
+then complete it at zero. Check History, Dashboard, and Museum. Cancelled sessions
+add no credit. Stopwatch completion requires at least one minute. Pause/resume
+excludes break time. The backend automatically cancels abandoned sessions according
+to the rules in [the API guide](../backend/API.md).
+
+## Checks
 
 ```sh
+npm run build
 npm run lint
 npm test
-npm run build
-npm run preview
 ```
 
-## Included
-
-- Responsive focus workspace with countdown and stopwatch modes, activity selection, and cancellation.
-- Active-session recovery after reload, using timestamps instead of counting interval ticks.
-- Browser-local completed history, activity totals, and a sample fossil progress meter.
-- Museum preview and a clearly labeled future Groups screen.
-- Original inline SVG skeleton illustration. It is a placeholder preview, not a completed fossil-reveal implementation.
-
-For a short demo, choose the one-minute duration, start, reload to show recovery, then save when the timer reaches zero. Open History, Dashboard, and Museum to see the result. Cancelled sessions do not count. Stopwatch sessions require at least one minute. Countdown credit is capped at the selected duration even if you return later.
-
-## Structure and backend boundary
-
-- `src/App.tsx`: application shell, navigation, and prototype views.
-- `src/App.css` / `src/index.css`: responsive styles and shared visual tokens.
-- `src/data/demoStore.ts`: typed local storage adapter and demo completion rules.
-- `tests/demoStore.test.mjs`: timer, recovery, completion, duplication, and corrupt-storage checks.
-
-React and TypeScript provide typed, reusable UI. Vite runs a standalone frontend without selecting a server framework. The eventual API client should replace the local adapter; loading/error states and authentication will need to be added when its asynchronous contracts are known.
-
-Browser data is demo-only, device-local, user-editable, and not trusted. Server-side session validation, authoritative timing, exactly-once rewards, account ownership, and group permissions remain backend work. The 150-minute fossil target is illustrative, not a finalized product rule. No membership, invitation, or login actions are simulated as real functionality.
-
-Google Fonts is optional; system fonts provide a fallback offline. All illustrations are local. Browser storage can be cleared through browser site settings. Multiple simultaneous tabs are not synchronized. If storage is unavailable, persistence is not guaranteed.
-
-## M2 status
-
-This covers the frontend prototype and frontend lint/test/build CI. The proposed system architecture, backend stack, and persistent data design are documented in `docs/M2-design.md`; the team must confirm the proposal before implementation. The existing root README preserves the M1 proposal.
-
-AI assisted with frontend implementation, styling, and tests. The team should review and own the design and integration decisions before presenting.
-
-## M2 sample workspace
-
-Append `/?demo=sample` to the local URL. The labeled workspace starts with 8 fictional sessions and 149 minutes. Complete one real one-minute Deep work countdown to show 150 minutes, 9 sessions, and 100% fossil progress. The artwork is still a static preview. Use Reset sample data between rehearsals; it only resets the separate sample workspace. The ordinary URL preserves your normal history.
+Tests cover sample isolation, timer rules, analytics boundaries, session response
+mapping, history pagination, and the authenticated session request payloads.
+Backend integration tests cover session ownership and state transitions.

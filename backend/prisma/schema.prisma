@@ -25,6 +25,17 @@ model User {
 
   authSessions  AuthSession[]
   focusSessions FocusSession[]
+  tags          Tag[]
+}
+
+model Tag {
+  id             String @id @default(uuid())
+  userId         String
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  normalizedName String
+
+  @@unique([userId, normalizedName])
 }
 
 // One row per logged-in browser. The cookie holds a random token; only its

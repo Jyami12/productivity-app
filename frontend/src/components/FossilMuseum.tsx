@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./FossilMuseum.css";
 import FossilReveal from "./FossilReveal";
-import { SOURCED_ART, type ArtStyle } from "../data/fossilArtwork";
 
 import { FOSSILS, type FossilDefinition } from "../data/fossils";
 
@@ -27,7 +26,6 @@ export default function FossilMuseum({
     ? Math.max(0, Math.floor(totalMinutes))
     : 0;
   const [query, setQuery] = useState("");
-  const [artStyle, setArtStyle] = useState<ArtStyle>("fossil");
   const [filter, setFilter] = useState<Filter>("All");
   const [selected, setSelected] = useState<FossilDefinition | null>(null);
   const favoriteKey = `dinofocus.museum.favorites.${storageScope}.v1`;
@@ -117,25 +115,6 @@ export default function FossilMuseum({
             {minutes.toLocaleString()} focused minutes
           </span>
         </div>
-        <div className="fm-art-controls">
-          <label>
-            Illustration style
-            <select
-              value={artStyle}
-              onChange={(e) => setArtStyle(e.target.value as ArtStyle)}
-            >
-              <option value="fossil">Fossil studies · original art</option>
-              <option value="sketch">Field sketches · offline</option>
-              <option value="archive">Open collection · online</option>
-            </select>
-          </label>
-          {artStyle === "archive" && (
-            <p>
-              Five freely licensed illustrations. Local sketches appear for
-              other fossils or if an image cannot load.
-            </p>
-          )}
-        </div>
       </div>
       <div className="fm-filters" role="group" aria-label="Filter fossils">
         {FILTERS.map((item) => (
@@ -205,10 +184,10 @@ export default function FossilMuseum({
                   style={{ color: state === "Locked" ? "#b7beb0" : f.color }}
                 >
                   <FossilReveal
-                    key={`${f.id}-${artStyle}`}
+                    key={f.id}
                     id={f.id}
                     percent={state === "Locked" ? 0 : percentage(f)}
-                    style={artStyle}
+
                     className="fm-art"
                   />
                 </span>
@@ -261,30 +240,7 @@ export default function FossilMuseum({
           </button>
         </div>
       )}
-      <details className="fm-credits">
-        <summary>About the illustrations & artwork credits</summary>
-        <p>
-          The fossil studies and field sketches are original decorative SVG
-          illustrations, not scientific reconstructions. The open collection
-          uses the sources below, fitted and tinted with CSS to match this site.
-          Historical drawings may reflect outdated anatomy. The Spinosaurus
-          display adaptation is CC BY-SA 3.0.
-        </p>
-        <ul>
-          {Object.entries(SOURCED_ART).map(([id, art]) => (
-            <li key={id}>
-              <a href={art.source} target="_blank" rel="noreferrer">
-                {art.title}
-              </a>{" "}
-              by {art.author}.{" "}
-              <a href={art.licenseUrl} target="_blank" rel="noreferrer">
-                {art.license}
-              </a>
-              . {art.note}
-            </li>
-          ))}
-        </ul>
-      </details>
+      <p className="fm-footnote">Original decorative fossil illustrations; not scientific reconstructions.</p>
       {message && (
         <p className="fm-footnote" role="status">
           {message}
@@ -315,12 +271,12 @@ export default function FossilMuseum({
 
             <div className="fm-detail-art" style={{ color: selected.color }}>
               <FossilReveal
-                key={`${selected.id}-${artStyle}`}
+                key={selected.id}
                 id={selected.id}
                 percent={
                   status(selected) === "Locked" ? 0 : percentage(selected)
                 }
-                style={artStyle}
+
                 className="fm-art"
               />
             </div>

@@ -1,5 +1,9 @@
 # DinoFocus M2 design
 
+> Historical M2 design. Groups, invitations, memberships, and shared goals were
+> subsequently cut from the semester release. The [M4 scope decision](M4-scope.md)
+> supersedes those requirements and plans. See the frontend README for current behavior.
+
 ## Scope and evidence
 
 DinoFocus helps anyone organize focused work, see progress, and review how they spent their time. This M2 prototype demonstrates the personal workflow through the actual React UI with clearly labeled fictional history. It uses browser storage. Authentication, server validation, database persistence, groups, and progressive fossil artwork are not implemented.

@@ -60,7 +60,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   if (state.status === "signed-in") {
     return (
-      <AuthContext.Provider value={{ user: state.user, logout }}>
+      <AuthContext.Provider key={state.user.id} value={{ user: state.user, logout, refresh: load }}>
         {children}
       </AuthContext.Provider>
     );
