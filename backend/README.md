@@ -36,16 +36,26 @@ Run the frontend at the same time (`cd frontend && npm run dev`). Vite forwards 
 
 ## API
 
-All routes are under `/api`. Errors use `{ "error": { "code", "message", "fields"? } }`.
+See [API.md](API.md) for every route (auth and focus sessions), request and response shapes, error codes, and how to call them from the frontend.
 
-| Route | Result |
-| --- | --- |
-| `GET /health` | `{ ok, database }`; 503 if the database is unreachable |
-| `POST /auth/register` `{ email, password }` | 201 `{ user }` and a login cookie; 400 invalid input; 409 email taken |
-| `POST /auth/login` `{ email, password }` | 200 `{ user }` and a login cookie; 401 wrong email or password |
-| `POST /auth/logout` | 204, ends the session |
-| `GET /auth/me` | 200 `{ user }`; 401 when logged out |
+Login uses an `HttpOnly`, `SameSite=Lax` cookie (`dinofocus_session`, 30 days). The database stores only a SHA-256 hash of the cookie token (`AuthSession` table). Failed logins and sign-ups are limited to 10 per IP address per 15 minutes.
 
-`user` is `{ id, email, createdAt }`. Emails are stored lowercase. Passwords must be 8 to 72 bytes and are stored as bcrypt hashes.
+## Deploying
 
-Login uses an `HttpOnly`, `SameSite=Lax` cookie (`dinofocus_session`, 30 days). The database stores only a SHA-256 hash of the cookie token (`AuthSession` table).
+The server checks its settings at startup and exits with a list of anything missing or invalid. A `.env` file is optional; hosts usually provide settings as environment variables instead.
+
+| Setting | Required | Value |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Neon **pooled** URL |
+| `DIRECT_URL` | For migrations | Neon direct URL (used by `prisma migrate deploy`) |
+| `NODE_ENV` | Recommended | `production` (makes the login cookie HTTPS-only) |
+| `TRUST_PROXY` | Behind a proxy | `1` on hosts like Render or Railway, so rate limits see real visitor IPs |
+| `PORT` | No | Defaults to 3000; most hosts set it automatically |
+
+```sh
+npm ci && npm run build      # build
+npx prisma migrate deploy    # apply new migrations to the database
+npm start                    # run dist/server.js
+```
+
+The server shuts down cleanly on `SIGTERM` (sent by hosts when redeploying): it finishes requests in progress, then closes database connections.
