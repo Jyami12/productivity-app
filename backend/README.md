@@ -34,9 +34,7 @@ Run the frontend at the same time (`cd frontend && npm run dev`). Vite forwards 
 | `npm run db:migrate` | Create a migration from `prisma/schema.prisma` changes and apply it |
 | `npm run db:studio` | Browse the database in Prisma Studio |
 
-## API
-
-### Presentation account
+## Presentation account
 
 `node --env-file-if-exists=.env --import tsx scripts/create-demo-account.ts` creates
 `demo@dinofocus.example` with 12 fictional completed sessions totaling 149 minutes,
@@ -49,11 +47,18 @@ a real one-minute countdown reaches 150 minutes and unlocks Tyrannosaurus rex.
 Rehearsal sessions change this account's totals, so reserve that last minute for
 the presentation. The script is separate from normal app startup and migrations.
 
+## API
+
 Custom tags are saved per account. Apply the latest migrations with `npx prisma migrate deploy`
 before using **Create tag** in the focus workspace. The four preset tags remain available;
 new names are trimmed, limited to 40 characters, and deduplicated ignoring case per account.
 Custom tag creation is available in the signed-in workspace, not the no-login sample. Session APIs still accept tag names,
-so this is compatible with the account-history integration.
+and the frontend session/history integration uses this field.
+
+See the [current design](../docs/design.md) for the implemented schema and derived
+analytics/rewards. PostgreSQL stores accounts, login sessions, focus sessions, and
+tags. Fossil definitions and progress calculations are frontend code; there are
+no separate fossil/reward/group tables or analytics endpoints.
 
 See [API.md](API.md) for every route (auth and focus sessions), request and response shapes, error codes, and how to call them from the frontend.
 

@@ -1,8 +1,9 @@
 # DinoFocus M2 design
 
-> Historical M2 design. Groups, invitations, memberships, and shared goals were
-> subsequently cut from the semester release. The [M4 scope decision](M4-scope.md)
-> supersedes those requirements and plans. See the frontend README for current behavior.
+> Historical M2 design, retained as a record of the browser-only prototype.
+> The [current design](design.md) supersedes the architecture, data models, API
+> plans, artwork options, and sample-data details below. The [M4 scope decision](M4-scope.md)
+> removes Groups, invitations, memberships, and shared goals from the semester release.
 
 ## Scope and evidence
 

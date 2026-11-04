@@ -12,7 +12,8 @@ Groups, invitations, membership management, and shared weekly goals are removed
 from the semester release. They are not promised for a later milestone. The site
 contains no Groups navigation or placeholder page.
 
-The M1 proposal and M2 design describe the earlier plan. This decision supersedes
+The [M1 proposal](M1-proposal.md) and [M2 design](M2-design.md) describe the earlier plan.
+The [current design](design.md) records the integrated implementation. This decision supersedes
 their group-related requirements, user stories US-4 and US-5, delivery dates,
 ownership assignments, API plans, and proposed group data models.
 
@@ -26,7 +27,15 @@ ownership and server-validated session timing as foundations of the personal wor
 
 ## Remaining release work
 
-Rehearse the integrated app in a browser, verify the presentation environment,
-complete deployment and accessibility checks, and merge the implemented features
-into the presentation branch. Scope reduction does not itself establish that every
-remaining original requirement is complete.
+The app changes were committed and pushed to `main` and `jason-branch` as `036591b`.
+The user rehearsed the one-minute T. rex unlock and the presentation account was
+restored to its 149-minute baseline afterward. Before presenting, check the live
+environment and baseline again and rehearse the complete sequence. Deployment,
+broad accessibility, responsive/cross-browser review, and full regression checks
+remain release work.
+
+Other original proposal requirements are not implemented as written: tag
+renaming/deletion, history editing, a separate failed-session status, monthly
+analytics, repeated fossil copies, and a reward configuration UI. Account-scoped
+museum favorites and analytics goals remain browser-local. These limitations
+should be disclosed; cutting Groups does not make every remaining M1 promise complete.

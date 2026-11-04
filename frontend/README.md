@@ -1,6 +1,7 @@
 # DinoFocus frontend
 
 React + TypeScript with Vite. Use Node.js 22.18+ (Node 24 recommended).
+See the [current design](../docs/design.md) for architecture, timing rules, and limitations.
 
 ## Run locally
 
@@ -57,3 +58,9 @@ npm test
 Tests cover sample isolation, timer rules, analytics boundaries, session response
 mapping, history pagination, and the authenticated session request payloads.
 Backend integration tests cover session ownership and state transitions.
+
+The museum uses only original animated fossil SVGs. Illustration style selection,
+field sketches, externally hosted artwork, and their source credits were removed.
+Navigation and tab focus do not automatically refetch account history; reload to
+pick up sessions saved externally. Existing view state updates after successful
+session actions.
