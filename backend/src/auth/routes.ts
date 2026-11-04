@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
+import { validationError } from "../errors.js";
 import { Prisma, type User } from "../generated/prisma/client.js";
 import { requireAuth } from "./middleware.js";
 import { hashPassword, verifyPassword } from "./password.js";
@@ -22,16 +23,6 @@ const publicUser = (user: User) => ({
   email: user.email,
   createdAt: user.createdAt,
 });
-
-function validationError(error: z.ZodError) {
-  return {
-    error: {
-      code: "VALIDATION_ERROR",
-      message: "Please fix the highlighted fields.",
-      fields: z.flattenError(error).fieldErrors,
-    },
-  };
-}
 
 export const authRouter = Router();
 

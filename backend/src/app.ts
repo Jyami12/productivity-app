@@ -1,7 +1,9 @@
 import cookieParser from "cookie-parser";
 import express, { type ErrorRequestHandler } from "express";
+import { requireAuth } from "./auth/middleware.js";
 import { authRouter } from "./auth/routes.js";
 import { prisma } from "./db.js";
+import { sessionsRouter } from "./sessions/routes.js";
 
 // Builds the Express app without starting a server, so tests can import it.
 export function createApp() {
@@ -20,6 +22,7 @@ export function createApp() {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/sessions", requireAuth, sessionsRouter);
 
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found." } });
