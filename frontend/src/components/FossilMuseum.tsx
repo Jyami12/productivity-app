@@ -124,9 +124,7 @@ export default function FossilMuseum({
               value={artStyle}
               onChange={(e) => setArtStyle(e.target.value as ArtStyle)}
             >
-              <option value="fossil">
-                Fossil study · Brachiosaurus preview
-              </option>
+              <option value="fossil">Fossil studies · original art</option>
               <option value="sketch">Field sketches · offline</option>
               <option value="archive">Open collection · online</option>
             </select>
