@@ -11,8 +11,8 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev && prisma generate",
     "db:studio": "prisma studio",
-    "pretest": "tsx --env-file=.env scripts/prepare-test-db.ts",
-    "test": "DATABASE_SCHEMA=test node --env-file=.env --import tsx --test --test-concurrency=1 tests/*.test.ts"
+    "pretest": "tsx --env-file-if-exists=.env scripts/prepare-test-db.ts",
+    "test": "DATABASE_SCHEMA=test node --env-file-if-exists=.env --import tsx --test --test-concurrency=1 tests/*.test.ts"
   },
   "engines": {
     "node": ">=22.18.0"

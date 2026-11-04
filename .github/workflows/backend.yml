@@ -1,0 +1,42 @@
+name: Backend checks
+on:
+  push:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    # A throwaway Postgres for this run only; the real Neon database is never used.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: dinofocus
+          POSTGRES_PASSWORD: dinofocus
+          POSTGRES_DB: dinofocus
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U dinofocus"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://dinofocus:dinofocus@localhost:5432/dinofocus
+      DIRECT_URL: postgresql://dinofocus:dinofocus@localhost:5432/dinofocus
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      # Also generates the Prisma client (postinstall).
+      - run: npm ci
+      - run: npm run typecheck
+      # Applies all migrations to the "test" schema, then runs every test.
+      - run: npm test
+      - run: npm run build
