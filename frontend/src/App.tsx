@@ -69,6 +69,16 @@ function App() {
   const featured = nextFossil ?? FOSSILS[FOSSILS.length - 1];
   const collected = FOSSILS.filter((f) => total >= f.target).length;
   const progress = Math.min(100, Math.floor((total / featured.target) * 100));
+  const previewMinutes = active
+    ? Math.min(
+        elapsed / 60,
+        active.mode === "countdown" ? active.duration : Infinity,
+      )
+    : 0;
+  const liveReveal = Math.min(
+    100,
+    ((total + previewMinutes) / featured.target) * 100,
+  );
   const todaySessions = sessions.filter(
     (s) => s.completedAt <= now && dateKey(s.completedAt) === dateKey(now),
   );
@@ -174,11 +184,12 @@ function App() {
         <div
           className="desk-fossil"
           role="img"
-          aria-label={`${featured.name}, ${progress}% uncovered`}
+          aria-label={`${featured.name}, ${Math.floor(liveReveal)}% uncovered${active ? ", including unsaved session preview" : ""}`}
         >
           <FossilReveal
             id={featured.id}
-            percent={progress}
+            percent={liveReveal}
+            animateReveal={!!active && !paused}
             className="fossil"
             centered
           />
@@ -191,12 +202,20 @@ function App() {
         <span className="art-star">✧</span>
       </div>
       <div className="dig-info">
+        {active && (
+          <p className="excavation-note">
+            Bones uncover as you focus. Complete this session to keep your
+            discoveries.
+          </p>
+        )}
         <span className="pill">
           {nextFossil ? "YOUR NEXT FIND" : "IN YOUR MUSEUM"}
         </span>
         <h2>{featured.name}</h2>
         <div className="progress-label">
-          <span>Excavation progress</span>
+          <span>
+            {active ? "Saved excavation progress" : "Excavation progress"}
+          </span>
           <strong>{progress}%</strong>
         </div>
         <progress

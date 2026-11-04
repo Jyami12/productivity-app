@@ -1,4 +1,3 @@
-import { FossilInspector } from "./FossilPlate";
 import { useEffect, useRef, useState } from "react";
 import "./FossilMuseum.css";
 import FossilReveal from "./FossilReveal";
@@ -314,25 +313,21 @@ export default function FossilMuseum({
             <span className="fm-kicker">
               SPECIMEN #{String(FOSSILS.indexOf(selected) + 1).padStart(3, "0")}
             </span>
-            {!(selected.id === "brachiosaurus" && artStyle === "fossil") && (
-              <div className="fm-detail-art" style={{ color: selected.color }}>
-                <FossilReveal
-                  key={`${selected.id}-${artStyle}`}
-                  id={selected.id}
-                  percent={
-                    status(selected) === "Locked" ? 0 : percentage(selected)
-                  }
-                  style={artStyle}
-                  className="fm-art"
-                />
-              </div>
-            )}
+
+            <div className="fm-detail-art" style={{ color: selected.color }}>
+              <FossilReveal
+                key={`${selected.id}-${artStyle}`}
+                id={selected.id}
+                percent={
+                  status(selected) === "Locked" ? 0 : percentage(selected)
+                }
+                style={artStyle}
+                className="fm-art"
+              />
+            </div>
             <span className="fm-group">{selected.group}</span>
             <h2 id="fm-detail-title">{selected.name}</h2>
             <span className="fm-detail-status">{status(selected)}</span>
-            {selected.id === "brachiosaurus" && artStyle === "fossil" && (
-              <FossilInspector key={selected.id} />
-            )}
             <p>
               Unlocks at{" "}
               <strong>{selected.target} total focused minutes</strong>.

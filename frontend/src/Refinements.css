@@ -1205,3 +1205,7 @@
   .sidebar .sidebar-note { display: none; }
   .sidebar .profile { margin-top: auto; }
 }
+
+.excavation-brush { position:absolute; pointer-events:none; opacity:0; width:42px; height:42px; z-index:2; }
+.excavation-note { font-size:11px; line-height:1.5; color:#5b694c; margin:0 0 12px; }
+@media (prefers-reduced-motion: reduce) { .excavation-brush { display:none; } }

@@ -1,39 +1,6 @@
-import { useId, useState } from "react";
+import { useId } from "react";
 import "./FossilPlate.css";
 
-type Region = "all" | "skull" | "neck" | "ribs" | "limbs" | "tail";
-const regions: { id: Region; label: string; note: string }[] = [
-  {
-    id: "all",
-    label: "Whole skeleton",
-    note: "An original stylized skeletal study. Select a region to inspect its bones; this is an art preview, not a scientific reconstruction.",
-  },
-  {
-    id: "skull",
-    label: "Skull",
-    note: "Openings, a separate lower jaw, and small tooth marks give the head its fossil character.",
-  },
-  {
-    id: "neck",
-    label: "Neck & spine",
-    note: "Individual vertebrae follow the long neck into the back. Gaps keep the bones distinct at small sizes.",
-  },
-  {
-    id: "ribs",
-    label: "Rib cage",
-    note: "Tapered ribs curve from the backbone toward the underside of the torso.",
-  },
-  {
-    id: "limbs",
-    label: "Limbs",
-    note: "Angular joints, paired lower-leg bones, and separate toes replace the solid mascot silhouette.",
-  },
-  {
-    id: "tail",
-    label: "Tail",
-    note: "The vertebrae become smaller toward the tip of the tail.",
-  },
-];
 function Bone({
   x,
   y,
@@ -62,10 +29,8 @@ function Bone({
 }
 export default function FossilPlate({
   className = "",
-  region = "all",
 }: {
   className?: string;
-  region?: Region;
 }) {
   const uid = useId();
   return (
@@ -74,7 +39,6 @@ export default function FossilPlate({
       viewBox="0 0 640 360"
       aria-hidden="true"
       focusable="false"
-      data-region={region}
     >
       <defs>
         <linearGradient id={uid} x2="0.4" y2="1">
@@ -184,57 +148,5 @@ export default function FossilPlate({
         </g>
       </g>
     </svg>
-  );
-}
-export function FossilInspector() {
-  const [region, setRegion] = useState<Region>("all");
-  const [zoom, setZoom] = useState(1);
-  return (
-    <section className="fossil-inspector" aria-label="Interactive fossil study">
-      <div className="fossil-inspector-heading">
-        <strong>Specimen study</strong>
-        <span>Art preview · does not unlock rewards</span>
-      </div>
-      <div
-        className="fossil-inspector-stage"
-        tabIndex={0}
-        aria-label="Fossil drawing. Scroll to inspect when zoomed in."
-      >
-        <div style={{ width: `${zoom * 100}%` }}>
-          <FossilPlate region={region} />
-        </div>
-      </div>
-      <div
-        className="fossil-region-controls"
-        role="group"
-        aria-label="Inspect bones"
-      >
-        {regions.map((r) => (
-          <button
-            key={r.id}
-            type="button"
-            aria-pressed={region === r.id}
-            onClick={() => setRegion(r.id)}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-      <p className="fossil-study-note" aria-live="polite">
-        {regions.find((r) => r.id === region)?.note}
-      </p>
-      <label className="fossil-zoom">
-        Magnification{" "}
-        <input
-          type="range"
-          min="1"
-          max="2"
-          step=".25"
-          value={zoom}
-          onChange={(e) => setZoom(Number(e.target.value))}
-        />
-        <output>{zoom}×</output>
-      </label>
-    </section>
   );
 }
