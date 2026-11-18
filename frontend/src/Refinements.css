@@ -1196,3 +1196,171 @@
 .excavation-brush { position:absolute; pointer-events:none; opacity:0; width:42px; height:42px; z-index:2; }
 .excavation-note { font-size:11px; line-height:1.5; color:#5b694c; margin:0 0 12px; }
 @media (prefers-reduced-motion: reduce) { .excavation-brush { display:none; } }
+
+/* Let the Focus layout respond to the space beside the sidebar. */
+.focus-content .focus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+}
+
+.focus-content .focus-grid > * {
+  min-width: 0;
+}
+
+/* Keep the sidebar usable on short laptops and landscape phones. */
+@media (min-width: 601px) {
+  .sidebar {
+    overflow-y: auto;
+  }
+}
+
+/* Keep Activity beside the focus stats on smaller screens. */
+@media (max-width: 900px) {
+  .focus-content .today-strip .activity-trigger {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 7px;
+    box-shadow: none;
+  }
+
+  .activity-trigger > span {
+    writing-mode: horizontal-tb;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Give each visible tab an equal share of the bottom bar. */
+  .sidebar nav {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+
+  .sidebar .nav-item .nav-name {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  /* Leave room for the fixed navigation when scrolling to the last item. */
+  .app-shell main > .content {
+    padding-inline: clamp(12px, 4vw, 22px);
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* The running timer, account button, and demo controls can wrap. */
+  .topbar {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding-block: 8px;
+  }
+
+  .topbar .demo-controls {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* In sample mode, give the explanation and reset action their own row. */
+  .topbar .demo-controls:has(.sample-banner) {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+
+  .topbar .sample-banner {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+
+  .focus-content .duration-picks button,
+  .topbar .account-chip {
+    min-height: 44px;
+  }
+
+  .topbar .account-chip {
+    min-width: 44px;
+  }
+}
+
+/* Give the tag picker and custom duration a full row on narrow phones. */
+@media (max-width: 420px) {
+  .focus-content .session-options {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .focus-content .session-options select,
+  .focus-content .session-options input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Focus, Dashboard, Museum, and History each get one column. */
+  .sidebar nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* Stack the timer and fossil, even when a card has a long label. */
+  .focus-content .focus-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .focus-grid > *,
+  .session-row > div {
+    min-width: 0;
+  }
+
+  .session-row strong {
+    overflow-wrap: anywhere;
+  }
+
+  /* Give the sample banner its own row when it is present. */
+  .topbar {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding-block: 8px;
+  }
+
+  .topbar .demo-controls:has(.sample-banner) {
+    flex-basis: 100%;
+  }
+
+  .topbar .sample-banner {
+    flex: 1 1 100%;
+  }
+
+  /* Put Activity beside the focus stats so it scrolls with the page. */
+  .focus-content .today-strip .activity-trigger {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    border-radius: 7px;
+    padding: 8px 12px;
+    min-height: 44px;
+  }
+
+  .activity-trigger > span {
+    writing-mode: horizontal-tb;
+  }
+
+  /* The dashboard session table currently has a 390px minimum. */
+  .dashboard-content .ta-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .dashboard-content .ta-table :is(th, td) {
+    padding: 8px 4px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
