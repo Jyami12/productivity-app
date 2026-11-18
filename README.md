@@ -96,8 +96,9 @@ Express serves the React app at `/` and the API at `/api` from one URL.
 See the [deployment guide](backend/README.md#deploying) for the local production
 build, Neon migrations, and Render setup.
 
-The production build passed a local smoke test. The public Render URL is pending.
-Once hosted, have a teammate sign in from a fresh browser, create a custom tag,
+Open the [live DinoFocus app](https://dinofocus-qonc.onrender.com/) or check
+[database health](https://dinofocus-qonc.onrender.com/api/health).
+To check the full hosted workflow, sign in from a fresh browser, create a custom tag,
 reload during a one-minute countdown, and complete it. Sign out and back in and
 confirm History and Analytics reflect the saved session.
 
