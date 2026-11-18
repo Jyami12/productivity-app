@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import express, { type ErrorRequestHandler } from "express";
 import helmet from "helmet";
+import { fileURLToPath } from "node:url";
 import { requireAuth } from "./auth/middleware.js";
 import { DEFAULT_AUTH_RATE_LIMITS, type AuthRateLimits } from "./auth/rateLimit.js";
 import { createAuthRouter } from "./auth/routes.js";
@@ -42,6 +43,11 @@ export function createApp(options: AppOptions = {}) {
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: { code: "NOT_FOUND", message: "Route not found." } });
   });
+
+  if (process.env.NODE_ENV === "production") {
+    const frontendDist = fileURLToPath(new URL("../../frontend/dist/", import.meta.url));
+    app.use(express.static(frontendDist));
+  }
 
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     if (error?.type === "entity.parse.failed") {

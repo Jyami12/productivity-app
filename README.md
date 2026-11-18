@@ -2,7 +2,7 @@
 
 DinoFocus combines tagged focus sessions, collectible fossils, and personal time
 analytics. This repository contains the integrated React frontend and Express API
-for CSE 416, Fall 2026. Current documentation updated November 4, 2026 for M4.
+for CSE 416, Fall 2026. Updated November 18, 2026 for M5.
 
 ## Implemented workflow
 
@@ -35,8 +35,7 @@ Some original requirements remain limitations rather than completed features:
 tag renaming/deletion, history editing, a separate failed-session status, monthly
 analytics, repeated fossil copies, and a reward configuration UI are not implemented.
 Museum favorites and analytics goal preferences are stored per account in the
-browser, rather than synchronized across devices. Deployment and broader release
-checks remain to be verified. See the [current design](docs/design.md) for details.
+browser. See the [current design](docs/design.md) for details.
 
 ## Run locally
 
@@ -90,6 +89,18 @@ Old local history is not automatically imported into accounts. Page navigation
 and tab focus do not automatically refetch account history; reload to pick up
 external database changes.
 
+## Production build and Render
+
+The [Render Blueprint](render.yaml) builds both packages from `jason-branch`.
+Express serves the React app at `/` and the API at `/api` from one URL.
+See the [deployment guide](backend/README.md#deploying) for the local production
+build, Neon migrations, and Render setup.
+
+The production build passed a local smoke test. The public Render URL is pending.
+Once hosted, have a teammate sign in from a fresh browser, create a custom tag,
+reload during a one-minute countdown, and complete it. Sign out and back in and
+confirm History and Analytics reflect the saved session.
+
 ## Checks
 
 Frontend:
@@ -111,10 +122,12 @@ npm run build
 
 Backend database tests use an isolated `test` schema. The GitHub Actions backend
 job runs `npm test` against a disposable PostgreSQL service. See the
-[backend guide](backend/README.md) for test setup. Local verification passed for
-24 frontend tests, 44 session API tests, and three tag API tests, plus both builds,
-frontend lint, and backend type-check. This does not claim the full backend suite
-or the latest remote CI run was checked.
+[backend guide](backend/README.md#test-database) for test setup.
+
+M5 local verification passed both production builds, backend type-check,
+24 frontend tests, and 98 backend tests. The production HTTP smoke test confirmed
+that Express served the HTML, JavaScript, and CSS, `/api/health` reached Neon,
+and the API returned the expected 401 and JSON 404 responses.
 
 ## Documentation
 

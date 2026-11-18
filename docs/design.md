@@ -1,6 +1,6 @@
 # DinoFocus current design
 
-Updated November 4, 2026 for M4. This document describes the implemented app.
+Updated November 18, 2026 for M5. This document describes the implemented app.
 The [M1 proposal](M1-proposal.md) and [M2 design](M2-design.md) are historical records.
 See [M4 scope and trade-off](M4-scope.md) for the decision to cut Groups.
 
@@ -33,8 +33,12 @@ flowchart LR
   UI --> Analytics[Client-derived analytics and fossil progress]
 ```
 
-During development Vite proxies `/api` to the backend on port 3000. Authentication
-uses an HttpOnly, SameSite=Lax cookie, with Secure enabled in production. Passwords
+During development Vite proxies `/api` to the backend on port 3000. In production,
+Express serves the built frontend at `/` alongside the API. The Render Blueprint
+builds both packages and uses `/api/health` to verify database connectivity.
+See the [deployment guide](../backend/README.md#deploying) for setup.
+
+Authentication uses an HttpOnly, SameSite=Lax cookie, with Secure enabled in production. Passwords
 are bcrypt hashes; database login records store SHA-256 hashes of random cookie
 tokens. Authentication routes have rate limits. Session and tag routes determine
 the owner from the login cookie, never from a client-supplied user ID.
@@ -166,19 +170,11 @@ and custom tag creation is unavailable in the sample workspace.
 
 ## Verification and remaining work
 
-Local frontend build/lint and 24 frontend tests passed. Backend type-check/build,
-44 session API integration tests, and three tag API integration tests passed in
-this development session. These are named checks, not a claim that the full backend
-suite or latest GitHub Actions run was verified. Database integration tests use an
-isolated `test` schema. The demo account's login/history/tags APIs and browser
-sign-in/history flow were checked; the one-minute unlock was rehearsed by the user.
-
-Before presenting, verify both local services and database connectivity, confirm
-the demo baseline, and rehearse the exact flow. Deployment, broad accessibility,
-responsive/cross-browser review, and full regression verification remain release
-work. The M1 plans for tag/history editing, separate failed states, monthly analytics,
-repeat fossil copies, and a reward configuration UI are not implemented as written;
-they must not be claimed as completed features.
+See the [M5 verification results](../README.md#checks) for local builds, automated
+tests, and the production HTTP smoke test. Database integration tests use an
+isolated `test` schema. Before presenting, confirm the demo account baseline
+and rehearse the signed-in workflow at the deployed URL. Hosted browser checks
+and broader accessibility and cross-browser review remain pending.
 
 AI assisted with implementation, tests, and documentation. The team remains
 responsible for reviewing the code, product decisions, and presentation claims.

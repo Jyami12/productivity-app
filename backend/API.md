@@ -1,15 +1,22 @@
 # DinoFocus API
 
-Reference for the frontend. Everything lives under `/api` on the same origin as the frontend. In development, Vite proxies `/api` to the backend on port 3000 (`frontend/vite.config.ts`), so call `/api/...` with no host.
+Reference for the frontend. Everything lives under `/api` on the same origin as the frontend. In development, Vite proxies `/api` to the backend on port 3000. In production, Express serves both the built frontend and the API.
+Browser requests use relative `/api/...` URLs in both environments.
 
 - Request and response bodies are JSON.
 - Login is a cookie (`dinofocus_session`, HTTP-only). The browser sends it automatically with `credentials: "same-origin"`, which `frontend/src/api/client.ts` already does. Page JavaScript can't read it.
 - Dates are ISO 8601 strings in UTC, for example `"2026-11-03T18:25:00.000Z"`.
 - All durations are in **seconds**.
 
+## Health
+
+Public `GET /api/health` checks database reachability. It returns
+`200 { "ok": true, "database": "connected" }` on success or
+`503 { "ok": false, "database": "unreachable" }` if the query fails.
+
 ## Errors
 
-Every error has the same shape:
+API errors outside the health endpoint have this shape:
 
 ```json
 { "error": { "code": "SESSION_TOO_SHORT", "message": "This session can be completed in 42 more seconds." } }
@@ -55,7 +62,7 @@ interface User { id: string; email: string; createdAt: string }
 
 | Route | Body | Success |
 |---|---|---|
-| `POST /api/auth/register` | `{ email, password }` (password at least 8 characters) | `201 { user }`, and the user is logged in |
+| `POST /api/auth/register` | `{ email, password }` (password at least 8 characters and at most 72 UTF-8 bytes) | `201 { user }`, and the user is logged in |
 | `POST /api/auth/login` | `{ email, password }` | `200 { user }` |
 | `POST /api/auth/logout` | none | `204`, no body |
 | `GET /api/auth/me` | none | `200 { user }`, or `401` if logged out |
@@ -151,85 +158,16 @@ Query parameters, all optional:
 
 ---
 
-## Using this from the frontend
+## Frontend integration
 
-### Suggested `client.ts` additions
+The [API client](../frontend/src/api/client.ts) sends same-origin requests and
+exposes response errors through `ApiError`. The
+[session client](../frontend/src/api/sessions.ts) restores the active session,
+follows history pagination, and maps completed records for analytics and fossil
+progress. The signed-in workspace uses these clients for session changes. The
+[no-login sample workspace](../frontend/README.md#sample-demo) uses browser storage.
 
-```ts
-export interface FocusSession { /* as above */ }
-
-export const sessionsApi = {
-  start: (body: { mode: "countdown"; tag: string; plannedSeconds: number } | { mode: "stopwatch"; tag: string }) =>
-    request<{ session: FocusSession }>("POST", "/sessions", body).then((r) => r.session),
-  active: () =>
-    request<{ session: FocusSession | null; serverTime: string }>("GET", "/sessions/active"),
-  pause: (id: string) => request<{ session: FocusSession }>("POST", `/sessions/${id}/pause`).then((r) => r.session),
-  resume: (id: string) => request<{ session: FocusSession }>("POST", `/sessions/${id}/resume`).then((r) => r.session),
-  complete: (id: string) => request<{ session: FocusSession }>("POST", `/sessions/${id}/complete`).then((r) => r.session),
-  cancel: (id: string) => request<{ session: FocusSession }>("POST", `/sessions/${id}/cancel`).then((r) => r.session),
-  history: async (status: "completed" | "cancelled" | "all" = "completed") => {
-    const all: FocusSession[] = [];
-    let cursor: string | null = null;
-    do {
-      const query = `?status=${status}&limit=100${cursor ? `&cursor=${cursor}` : ""}`;
-      const page = await request<{ sessions: FocusSession[]; nextCursor: string | null }>("GET", `/sessions${query}`);
-      all.push(...page.sessions);
-      cursor = page.nextCursor;
-    } while (cursor);
-    return all;
-  },
-};
-```
-
-### Replacing `demoStore` in `App.tsx`
-
-| Today | Replace with |
-|---|---|
-| `demoStore.getSessions()` | `sessionsApi.history()` |
-| `demoStore.getActive()` | `sessionsApi.active()` |
-| Start (`demoStore.setActive({...})`) | `sessionsApi.start(...)` |
-| `toggleSessionPause()` | `sessionsApi.pause(id)` or `sessionsApi.resume(id)` |
-| `demoStore.complete()` | `sessionsApi.complete(id)` |
-| Cancel (`demoStore.setActive(null)`) | `sessionsApi.cancel(id)` |
-
-### Keeping fossils and analytics unchanged
-
-The museum and analytics read the existing `Session` type from `demoStore.ts`. Converting each completed API session into that shape keeps them working as they are:
-
-```ts
-const toLocalSession = (s: FocusSession): Session => ({
-  id: s.id,
-  tag: s.tag,
-  mode: s.mode,
-  seconds: s.creditedSeconds,
-  completedAt: new Date(s.endedAt!).getTime(),
-});
-```
-
-### Showing the running timer
-
-For a smooth display, keep ticking every second in the browser, but start from the server's numbers:
-- When a session is loaded, store `elapsedSeconds` and the time it was received.
-- While running (`pausedAt === null`), display `elapsedSeconds + seconds since it was received`. While paused, display `elapsedSeconds` as is.
-- For a countdown, the time left is `requiredSeconds - displayed elapsed`.
-- Enable the Finish button once the displayed elapsed time reaches `requiredSeconds`. If `complete` still returns `SESSION_TOO_SHORT` (for example, the browser's clock is slightly ahead), show the message and let the user try again a moment later.
-
-### Errors to handle in the UI
-
-- `401` on any call: the login expired, so return to the login screen.
-- `ACTIVE_SESSION_EXISTS` on start: load and show the running session with `sessionsApi.active()`.
-- `SESSION_TOO_SHORT`: show `error.message`.
-- `NETWORK_ERROR` (from `client.ts`): the backend isn't reachable.
-
-## Running it locally
-
-```sh
-cd backend
-npm install
-npm run db:migrate   # once, to create the FocusSession table in your database
-npm run dev          # API on http://localhost:3000
-```
-Then run `npm run dev` in `frontend`. Use `GET /api/health` to check that the backend and database are up.
+For the development and production start commands, see the [backend guide](README.md).
 
 ## Account tags
 

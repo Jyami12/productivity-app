@@ -10,7 +10,7 @@ Requires Node.js 22.18+ (Node 24 recommended, see `.nvmrc`).
 cd backend
 npm ci                 # also generates the Prisma client
 cp .env.example .env   # then fill in the Neon connection strings
-npm run db:migrate     # creates/updates tables in the database
+npx prisma migrate deploy  # applies the migrations checked into the repo
 npm run dev            # http://localhost:3000
 ```
 
@@ -33,6 +33,37 @@ Run the frontend at the same time (`cd frontend && npm run dev`). Vite forwards 
 | `npm run build` / `npm start` | Compile to `dist/` and run it |
 | `npm run db:migrate` | Create a migration from `prisma/schema.prisma` changes and apply it |
 | `npm run db:studio` | Browse the database in Prisma Studio |
+
+## Test database
+
+Use a development or disposable database with both connection URLs configured
+as above. The tests write to the isolated `test` schema. On Linux, `npm test`
+applies migrations to that schema and runs the suite. GitHub Actions runs the
+same command against a disposable PostgreSQL service.
+
+In PowerShell, run these commands from `backend`. The first command applies
+migrations using the direct URL with its schema set to `test`.
+
+```powershell
+@'
+const { execFileSync } = require('node:child_process');
+const url = new URL(process.env.DIRECT_URL);
+url.searchParams.set('schema', 'test');
+execFileSync(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy'], {
+  env: { ...process.env, DIRECT_URL: url.toString() },
+  stdio: 'inherit',
+});
+'@ | node --env-file-if-exists=.env
+
+if ($LASTEXITCODE -eq 0) {
+    $env:DATABASE_SCHEMA = 'test'
+    try {
+        node --env-file-if-exists=.env --import tsx --test --test-concurrency=1 'tests/*.test.ts'
+    } finally {
+        Remove-Item Env:DATABASE_SCHEMA
+    }
+}
+```
 
 ## Presentation account
 
@@ -66,6 +97,34 @@ Login uses an `HttpOnly`, `SameSite=Lax` cookie (`dinofocus_session`, 30 days). 
 
 ## Deploying
 
+The root [Render Blueprint](../render.yaml) builds both apps from `jason-branch`
+and runs Express as one web service. Express serves the built frontend at `/`
+and the API at `/api`, so the browser can use the login cookie on the same origin.
+
+Before creating the Blueprint in Render, push the branch and run
+`npx prisma migrate deploy` from `backend` with the target Neon database's
+`DIRECT_URL` in your environment or `backend/.env`. Repeat this before deploying
+commits with new migrations. In Render, select **New → Blueprint**, connect the
+repository and select `jason-branch`. Enter both Neon connection strings when
+prompted. The Blueprint uses the Free plan with automatic deploys disabled.
+Use **Manual Deploy** for updates after checking CI and applying any
+new migrations.
+
+To check the production build locally from the repository root in PowerShell:
+
+```powershell
+npm ci --prefix frontend --include=dev
+npm run build --prefix frontend
+npm ci --prefix backend --include=dev
+npm run build --prefix backend
+$env:NODE_ENV = 'production'
+npm start --prefix backend
+```
+
+With a configured, migrated database, open `http://localhost:3000/` and check
+`http://localhost:3000/api/health` for `database: "connected"`. Stop the
+server and run `Remove-Item Env:NODE_ENV` to clear the shell setting.
+
 The server checks its settings at startup and exits with a list of anything missing or invalid. A `.env` file is optional; hosts usually provide settings as environment variables instead.
 
 | Setting | Required | Value |
@@ -81,5 +140,8 @@ npm ci && npm run build      # build
 npx prisma migrate deploy    # apply new migrations to the database
 npm start                    # run dist/server.js
 ```
+
+Render Free services may need time to wake after sitting idle. Open the public
+URL and check `/api/health` before the demo.
 
 The server shuts down cleanly on `SIGTERM` (sent by hosts when redeploying): it finishes requests in progress, then closes database connections.

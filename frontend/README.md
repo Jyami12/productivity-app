@@ -17,6 +17,10 @@ Vite forwards `/api` requests to the backend on port 3000. The ordinary URL requ
 an account and a working backend/database. Sign in, then start a tagged countdown
 or stopwatch session. Custom tags are saved to your account.
 
+For production, `npm run build` writes the frontend to `dist/`. Express serves
+that directory and `/api` from one origin. See the
+[deployment guide](../backend/README.md#deploying) to run the integrated build.
+
 ## Account-backed sessions and history
 
 Starting, pausing, resuming, completing, and cancelling sessions use the authenticated
@@ -59,8 +63,6 @@ Tests cover sample isolation, timer rules, analytics boundaries, session respons
 mapping, history pagination, and the authenticated session request payloads.
 Backend integration tests cover session ownership and state transitions.
 
-The museum uses only original animated fossil SVGs. Illustration style selection,
-field sketches, externally hosted artwork, and their source credits were removed.
 Navigation and tab focus do not automatically refetch account history; reload to
 pick up sessions saved externally. Existing view state updates after successful
 session actions.
